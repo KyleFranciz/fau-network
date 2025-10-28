@@ -25,7 +25,7 @@ export interface FeaturedEventI {
 
 const FeaturedEvent: React.FC<FeaturedEventI> = ({ categories }) => {
   return (
-    <section className="w-full max-w-7xl mx-auto px-6 py-12 space-y-10">
+    <section className="w-full max-w-7xl mx-auto px-6 py-12 space-y-1">
       {categories.map((cat, idx) => (
         <div key={idx}>
           {/* Category Header */}
