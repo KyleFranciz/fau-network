@@ -19,12 +19,14 @@ const app = express();
 app.use(express.json()); // middleware that makes sure the request that are json to be broken down
 
 // cors
-app.use(cors({
-  origin: "http://localhost:5173", // the frontend port
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173", // the frontend port
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 // routes
 
@@ -42,6 +44,8 @@ app.get("/events", async (request: Request, response: Response) => {
   }
   response.json(data);
 });
+
+// TODO: supabase route to get all the popular events
 
 // start the actual server
 // listen - has the port run on 5000 and then the 0.0.0.0 listens to everything so that docker can connect and run

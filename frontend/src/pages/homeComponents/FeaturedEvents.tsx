@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
-import EventCard from './EventCard';
+import { useEffect, useState } from "react";
+import EventCard from "./EventCard";
 
+// Event interface
+// TODO: MOVE TO INTERFACE FOLDER TO HELP ORGANIZE THE CODE (GONNA DO LATER ON)
 interface ApiEvent {
   id: string;
   title: string | null;
@@ -12,15 +14,25 @@ interface ApiEvent {
   attedees_count: number | null; // note: backend typo preserved
 }
 
+// function to get the date and time formated correctly
 const formatDateTime = (d?: string | null, t?: string | null): string => {
-  if (!d && !t) return 'Date TBA';
+  if (!d && !t) return "Date TBA";
   const dateObj = d ? new Date(d) : undefined;
   if (dateObj && !isNaN(dateObj.getTime())) {
-    const datePart = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-    const timePart = t ?? dateObj.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    const datePart = dateObj.toLocaleDateString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+    const timePart =
+      t ??
+      dateObj.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     return `${datePart} ${timePart}`;
   }
-  return t ?? 'Date TBA';
+  return t ?? "Date TBA";
 };
 
 export default function FeaturedEvents() {
@@ -28,13 +40,14 @@ export default function FeaturedEvents() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
 
+  // TODO: REFACTOR TO AXIOS TO MAKE DATA MANAGEMENT EASIER
   useEffect(() => {
     const fetchEvents = async (): Promise<void> => {
       try {
         setIsLoading(true);
         setHasError(false);
-        const res = await fetch('http://localhost:8000/events');
-        if (!res.ok) throw new Error('Failed to load events');
+        const res = await fetch("http://localhost:8000/events");
+        if (!res.ok) throw new Error("Failed to load events");
         const data = await res.json();
         setEvents(Array.isArray(data) ? data : []);
       } catch (_err) {
@@ -48,19 +61,25 @@ export default function FeaturedEvents() {
   }, []);
 
   const handleJoinClick = (): void => {
-    console.log('Join event clicked');
+    console.log("Join event clicked");
   };
 
   return (
     <section className="mb-16">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-2">Featured Events</h2>
-          <p className="text-muted-foreground">Here are some events going on around campus.</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-2">
+            Featured Events
+          </h2>
+          <p className="text-muted-foreground">
+            Here are some events going on around campus.
+          </p>
         </div>
 
         {isLoading && (
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">Loading…</div>
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            Loading…
+          </div>
         )}
 
         {!isLoading && hasError && (
@@ -80,10 +99,10 @@ export default function FeaturedEvents() {
             <EventCard
               key={event.id}
               date={formatDateTime(event.date ?? event.created_at, event.time)}
-              title={event.title ?? 'Untitled Event'}
-              host={event.host_id ?? 'Unknown'}
+              title={event.title ?? "Untitled Event"}
+              host={event.host_id ?? "Unknown"}
               attendees={event.attedees_count ?? 0}
-              image={event.image_url ?? ''}
+              image={event.image_url ?? ""}
               onJoinClick={handleJoinClick}
             />
           ))}

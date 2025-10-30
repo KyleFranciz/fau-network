@@ -7,19 +7,18 @@ interface EventCardProps {
   onJoinClick?: () => void;
 }
 
-
-
-export default function EventCard({ 
-  date, 
-  title, 
-  host, 
-  attendees, 
+// TODO: REFACTOR LATER ON TO PASS IN ONE PROP OBJECT INTO THIS COMPONENT
+export default function EventCard({
+  date,
+  title,
+  host,
+  attendees,
   image,
-  onJoinClick 
+  onJoinClick,
 }: EventCardProps) {
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
-      <div className="relative h-48 bg-muted overflow-hidden">
+    <div className="rounded-2xl bg-card overflow-hidden hover:shadow-md transition-shadow duration-200 hover:cursor-pointer">
+      <div className="relative h-56 bg-muted rounded-3xl overflow-hidden">
         <img
           src={image}
           alt={title || "Event image"}
@@ -28,23 +27,34 @@ export default function EventCard({
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 to-gray-700/40" />
         <button
           onClick={onJoinClick}
-          className="absolute bottom-3 right-3 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium px-4 py-1.5 rounded-lg transition-colors duration-200"
+          className="absolute bottom-3 right-3 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium px-4 py-2 rounded-3xl transition-colors duration-200"
           aria-label="Join event"
         >
           I'm Down
         </button>
       </div>
       <div className="p-5 space-y-3">
-        <p className="text-sm font-medium text-foreground">{date || "Date TBA"}</p>
-        <h3 className="text-lg font-semibold text-foreground leading-tight">{title || "Event Title"}</h3>
-        <p className="text-sm text-muted-foreground">Hosted: {host || "Unknown"}</p>
+        <p className="text-sm font-medium text-foreground">
+          {date || "Date TBA"}
+        </p>
+        <h3 className="text-xl font-semibold text-foreground leading-tight">
+          {title || "Event Title"}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Hosted: {host || "Unknown"}
+        </p>
         <div className="flex items-center gap-2 pt-2">
           <div className="flex items-center -space-x-2">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-6 w-6 rounded-full bg-muted border-2 border-card" />
+              <div
+                key={i}
+                className="h-7 w-7 rounded-full bg-muted border-2 border-card"
+              />
             ))}
           </div>
-          <span className="text-sm text-muted-foreground">{attendees} attendees</span>
+          <span className="text-sm text-muted-foreground">
+            {attendees} attendees
+          </span>
         </div>
       </div>
     </div>
