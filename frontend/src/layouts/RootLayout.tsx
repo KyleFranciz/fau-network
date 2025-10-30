@@ -4,8 +4,8 @@ export default function RootLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="border-b bg-white shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+      <header className="border-b max-w-7xl w-full mx-auto px-6 mt-4 sticky top-4  py-4 z-100 rounded-4xl bg-white shadow-sm">
+        <div className="mx-auto">
           {/* WARNING: EVERY THING BELLOW SHOULD BE EDITED IF WORKING ON THE NAVBAR COMPONENT */}
           {/* NOTE: The link components will be used to route to other pages in the app, best to use in the navbar */}
           <div className="flex items-center justify-between">
@@ -49,7 +49,7 @@ export default function RootLayout() {
 
       {/* Main Content */}
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex justify-center">
+        <div className="mx-auto flex justify-center">
           {/* WARNING: THIS PART IS FOR THE DIFFERENT PAGE COMPONENTS TO RENDER OUT */}
           <Outlet />
         </div>
@@ -58,7 +58,7 @@ export default function RootLayout() {
       {/* Footer */}
       {/* WARNING: THIS PART IS TO EDIT FOR THE FOOTER COMPONENT */}
       <footer className="border-t bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto py-6">
           <p className="text-center text-sm text-gray-600">
             &copy; 2025 Campus Event Planner
           </p>
