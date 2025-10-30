@@ -41,6 +41,7 @@ export default function FeaturedEvents() {
   const [hasError, setHasError] = useState<boolean>(false);
 
   // TODO: REFACTOR TO AXIOS TO MAKE DATA MANAGEMENT EASIER
+  // TODO: ALSO ADD USEQUERY TO HELP WITH REFETCHES FOR NECESSARY PAGES AND COMPONENTS.
   useEffect(() => {
     const fetchEvents = async (): Promise<void> => {
       try {
@@ -67,8 +68,8 @@ export default function FeaturedEvents() {
   return (
     <section className="mb-16">
       <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-2">
+        <div className="mb-5">
+          <h2 className="text-3xl md:text-4xl font-bold mb-1">
             Featured Events
           </h2>
           <p className="text-muted-foreground">

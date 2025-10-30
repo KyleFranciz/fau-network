@@ -17,7 +17,7 @@ export default function EventCard({
   onJoinClick,
 }: EventCardProps) {
   return (
-    <div className="rounded-2xl bg-card overflow-hidden hover:shadow-md transition-shadow duration-200 hover:cursor-pointer">
+    <div className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer">
       <div className="relative h-56 bg-muted rounded-3xl overflow-hidden">
         <img
           src={image}
