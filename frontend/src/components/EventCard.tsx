@@ -35,7 +35,7 @@ const EventCard: React.FC<EventCardI> = ({
             className="absolute inset-0 w-full h-full object-cover"
           />
         )}
-        <button className="absolute bottom-3 right-3 bg-black text-white text-sm font-medium px-4 py-2 rounded-3xl hover:bg-gray-800 transition">
+        <button className="absolute bottom-3 right-3 bg-black text-white text-sm font-medium px-4 py-2 rounded-3xl hover:bg-gray-600 cursor-pointer transition">
           I’m Down
         </button>
       </div>
@@ -47,7 +47,7 @@ const EventCard: React.FC<EventCardI> = ({
         </p>
 
         <Link to={"/"}>
-          <h3 className="text-lg font-semibold text-gray-900 hover:bg-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 hover:text-gray-700">
             {title}
           </h3>
         </Link>
