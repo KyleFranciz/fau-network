@@ -14,6 +14,7 @@ interface ApiEvent {
   attedees_count: number | null; // note: backend typo preserved
 }
 
+// TODO: Move this function into a file in the lib folder to help find easier if needed
 // function to get the date and time formated correctly
 const formatDateTime = (d?: string | null, t?: string | null): string => {
   if (!d && !t) return "Date TBA";
@@ -65,8 +66,9 @@ export default function FeaturedEvents() {
     console.log("Join event clicked");
   };
 
+  // NOTE: Made a small tweak to the spacing from the top of the featured events componet
   return (
-    <section className="mb-16">
+    <section className="mb-16 mt-7">
       <div className="container mx-auto px-4">
         <div className="mb-5">
           <h2 className="text-3xl md:text-4xl font-bold mb-1">

@@ -13,16 +13,16 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-8 pb-16">
         <Hero />
       </div>
-      
+
       {/* Featured Events Section */}
       <FeaturedEvents />
-      
+
       {/* Popular Events Section */}
       <PopularEvents />
-      
+
       {/* CTA Banner */}
       <CTABanner />
-      
+
       {/* Footer */}
       <Footer />
     </div>
