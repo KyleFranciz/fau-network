@@ -11,6 +11,7 @@ import LoginPage from "./pages/Login";
 import SignUpPage from "./pages/SignUp";
 import ProfilePage from "./pages/Profile";
 import NotFoundPage from "./pages/NotFound";
+import AuthCallbackPage from "./pages/AuthCallback";
 // TODO: use the useParam function to help with the routing to the eventId page to when elements are clicked on the route to different pages
 
 const router = createBrowserRouter([
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
       {
         path: "signup", // this is for the auth page (might combine the login and the signup page)
         element: <SignUpPage />,
+      },
+      {
+        path: "auth/callback", // this is for handling email verification callback
+        element: <AuthCallbackPage />,
       },
       {
         path: "profile", // this is for the profile page to edit the account information
