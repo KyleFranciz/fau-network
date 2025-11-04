@@ -1,6 +1,8 @@
 import SearchBar from "../components/SearchBar";
 import FeaturedEvents from "./homeComponents/FeaturedEvents";
 
+// NOTE: EVENTS IN NAVBAR WILL HAVE A DROPDOWN TO ACCESS THE DIFFERENT EVENT ROUTING
+// NOTE: SEARCHBAR WILL JUST BE FOR FILTERING THE EVENTS IN THE PAGE
 export default function EventsPage() {
   return (
     <div className="w-full">
