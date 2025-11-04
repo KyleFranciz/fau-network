@@ -22,3 +22,17 @@ export const EVENT_CATEGORY_LABELS: Record<EventCategories, string> = {
   sports: "Sports",
   professional: "Professional",
 };
+
+// Event interface for each event
+export interface EventI {
+  id: string;
+  title: string | null;
+  description?: string | null;
+  image_url: string | null;
+  created_at: string | null;
+  date: string | null;
+  time: string | null;
+  location: string | null;
+  host_id: string | null;
+  attedees_count: number | null; // note: backend typo preserved
+}

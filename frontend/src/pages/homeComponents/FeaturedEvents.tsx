@@ -1,22 +1,13 @@
 import { useEffect, useState } from "react";
 import EventCard from "./EventCard";
-
-// Event interface
-// TODO: MOVE TO INTERFACE FOLDER TO HELP ORGANIZE THE CODE (GONNA DO LATER ON)
-interface ApiEvent {
-  id: string;
-  title: string | null;
-  image_url: string | null;
-  created_at: string | null;
-  date: string | null;
-  time: string | null;
-  host_id: string | null;
-  attedees_count: number | null; // note: backend typo preserved
-}
+import type { EventI } from "@/schemas/Events";
 
 // TODO: Move this function into a file in the lib folder to help find easier if needed
 // function to get the date and time formated correctly
-const formatDateTime = (d?: string | null, t?: string | null): string => {
+export const formatDateTime = (
+  d?: string | null,
+  t?: string | null,
+): string => {
   if (!d && !t) return "Date TBA";
   const dateObj = d ? new Date(d) : undefined;
   if (dateObj && !isNaN(dateObj.getTime())) {
@@ -37,7 +28,7 @@ const formatDateTime = (d?: string | null, t?: string | null): string => {
 };
 
 export default function FeaturedEvents() {
-  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [events, setEvents] = useState<EventI[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
 
