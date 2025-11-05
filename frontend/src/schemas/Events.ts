@@ -34,5 +34,5 @@ export interface EventI {
   time: string | null;
   location: string | null;
   host_id: string | null;
-  attedees_count: number | null; // note: backend typo preserved
+  attendees_count: number | null; // note: backend typo preserved
 }
