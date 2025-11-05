@@ -5,6 +5,7 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import { supabase } from "./supabaseClient";
 import cors from "cors";
+import { request } from "http";
 
 // env variables that are needed to run the server
 dotenv.config();
@@ -31,13 +32,13 @@ app.use(
 // routes
 
 // testing route
-app.get("/", (request: Request, response: Response) => {
+app.get("/", (_request: Request, response: Response) => {
   // send a test message
   response.send("If your seeing this the backend request is working properly");
 });
 
-// supabase route to fetch all events
-app.get("/events", async (request: Request, response: Response) => {
+// supabase route to fetch all events (featured events)
+app.get("/events", async (_request: Request, response: Response) => {
   const { data, error } = await supabase.from("events").select("*");
   if (error) {
     response.status(500).json({ error: error.message });
@@ -45,9 +46,31 @@ app.get("/events", async (request: Request, response: Response) => {
   response.json(data);
 });
 
-//TODO: route to get the featured events from the database
-
 // TODO: route to get all the popular events
+app.get("/events/popular", async (_request: Request, response: Response) => {
+  try {
+    // get the events with over 10 attendees (changing later possibly)
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .gte("attendees_count", 10); // NOTE: get value greater than or equal to...
+
+    // check if there is an error when getting the data from supabase
+    if (error) {
+      console.error("supabase error:", error.message);
+      response.status(500).json({ error: error.message });
+      // return stop the call
+      return;
+    }
+
+    // otherwise return the data
+    return response.json(data);
+  } catch (err) {
+    // if there is an error in the server
+    console.error("Server Error:", err);
+    response.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 //TODO: route to get the tech events from the database
 

@@ -20,3 +20,11 @@ export const getFeaturedEvents = async (): Promise<EventI[]> => {
 };
 
 // TODO: make a function to get the popular events from the backend
+// TODO: FIGURE OUT WHY THE FETCH IS GIVING A 404
+export const getPopularEvents = async (): Promise<EventI[]> => {
+  // get the data from the popular route in the backend
+  const response = await axios.get<EventI[]>(`${API_BASE_URL}/events/popular`);
+
+  // check if the data is an array, return if it is, empty array if not
+  return Array.isArray(response.data) ? response.data : [];
+};
