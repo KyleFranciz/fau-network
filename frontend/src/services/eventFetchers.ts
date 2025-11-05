@@ -28,3 +28,14 @@ export const getPopularEvents = async (): Promise<EventI[]> => {
   // check if the data is an array, return if it is, empty array if not
   return Array.isArray(response.data) ? response.data : [];
 };
+
+// function to get Study Events
+export const getStudyEvents = async (): Promise<EventI[]> => {
+  // get the data for the study events from the backend
+  const response = await axios.get<EventI[]>(`${API_BASE_URL}/events/study`);
+
+  // check the data to make sure its an array, return the data, if not then return an empty array
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+// function to get Sports Events

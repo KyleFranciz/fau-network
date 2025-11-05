@@ -1,10 +1,10 @@
 // NOTE: when making new api calls use https://backend:PORT to make the calls since we are using docker during dev
 
 import Hero from "./homeComponents/hero";
-import FeaturedEvents from "./homeComponents/FeaturedEvents";
-import PopularEvents from "./homeComponents/PopularEvents";
 import CTABanner from "./homeComponents/CTABanner";
 import Footer from "./homeComponents/Footer";
+import EventSection from "@/components/EventSection";
+import { getPopularEvents } from "@/services/eventFetchers";
 
 export default function HomePage() {
   return (
@@ -15,10 +15,19 @@ export default function HomePage() {
       </div>
 
       {/* Featured Events Section */}
-      <FeaturedEvents />
+      {/* NOTE: Changed the component for the customizeable Event section component */}
+      <EventSection
+        title="Featured Events"
+        description="Here are some events going on around campus."
+      />
 
       {/* Popular Events Section */}
-      <PopularEvents />
+      <EventSection
+        title="Popular Events"
+        description="Here are some events that a lot of students are in."
+        queryKey={["events", "popular"]}
+        queryFn={getPopularEvents}
+      />
 
       {/* CTA Banner */}
       <CTABanner />

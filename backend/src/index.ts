@@ -71,6 +71,31 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
     response.status(500).json({ error: "Internal Server Error" });
   }
 });
+// TODO: route to get all the study events from the database
+app.get("events/study", async (_request: Request, response: Response) => {
+  try {
+    // fetch events from the study category in display them on the frontend
+    // TODO: CHANGE THE VALUE TO THE REQUEST ROUTIING WHEN SELECTED
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("category_id", "7e2c6874-4fad-43d8-8dd8-dd20490f1e4f");
+
+    // check if there was an error
+    if (error) {
+      console.error("Supabase Error:", error.message);
+      response.status(500).json({ error: error.message });
+      // exit the function
+      return;
+    }
+
+    // return the data
+    return response.json(data);
+  } catch (err) {
+    console.error("Server Error", err);
+    response.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 //TODO: route to get the tech events from the database
 

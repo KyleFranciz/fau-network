@@ -1,3 +1,5 @@
+import { queryClient } from "@/lib/queryClient"; // used to make prefetches for the routing in the navbar
+import { homePagePrefetcher } from "@/prefetchers/homePagePrefetcher";
 import { Link } from "react-router";
 
 export default function Navbar() {
@@ -14,6 +16,8 @@ export default function Navbar() {
             <Link
               to="/"
               className="text-lg font-semibold text-gray-800 transition-colors hover:text-gray-900"
+              // NOTE: Added in a prefetcher to get homepage data when hovering on the homepage
+              onMouseEnter={() => homePagePrefetcher(queryClient)}
             >
               Home
             </Link>

@@ -1,6 +1,6 @@
 import EventSection from "@/components/EventSection";
 import SearchBar from "../components/SearchBar";
-import { getPopularEvents } from "@/services/eventFetchers";
+import { getPopularEvents, getStudyEvents } from "@/services/eventFetchers";
 
 // NOTE: SEARCHBAR WILL JUST BE FOR FILTERING THE EVENTS IN THE PAGE
 export default function EventsPage() {
@@ -22,6 +22,12 @@ export default function EventsPage() {
           description="Here are some of the popular events going on around campus"
           queryKey={["events", "popular"]}
           queryFn={getPopularEvents}
+        />
+        <EventSection
+          title="Study Events"
+          description="Here are some of the study events going on around campus"
+          queryKey={["events", "study"]}
+          queryFn={getStudyEvents}
         />
       </section>
     </div>
