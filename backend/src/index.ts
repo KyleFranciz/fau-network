@@ -45,7 +45,11 @@ app.get("/events", async (request: Request, response: Response) => {
   response.json(data);
 });
 
-// TODO: supabase route to get all the popular events
+//TODO: route to get the featured events from the database
+
+// TODO: route to get all the popular events
+
+//TODO: route to get the tech events from the database
 
 // start the actual server
 // listen - has the port run on 5000 and then the 0.0.0.0 listens to everything so that docker can connect and run

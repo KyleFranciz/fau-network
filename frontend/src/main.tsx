@@ -12,7 +12,20 @@ import SignUpPage from "./pages/SignUp";
 import ProfilePage from "./pages/Profile";
 import NotFoundPage from "./pages/NotFound";
 import AuthCallbackPage from "./pages/AuthCallback";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // TODO: use the useParam function to help with the routing to the eventId page to when elements are clicked on the route to different pages
+
+//NOTE: set up for the queryClient so that we can use useQuery to get data across the application
+const queryClient = new QueryClient({
+  // settings for the queryClient
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // five minutes before the data is considered stale
+      refetchOnWindowFocus: false, // refetch the data if the window is focused on
+      retry: 1, // retry once if a fetch fails
+    },
+  },
+});
 
 const router = createBrowserRouter([
   {
@@ -58,6 +71,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </React.StrictMode>,
 );

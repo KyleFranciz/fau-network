@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import EventCard from "./EventCard";
 import type { EventI } from "@/schemas/Events";
 
+const API_BASE_URL =
+  typeof import.meta !== "undefined" && import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL
+    : "http://localhost:8000";
+
 // TODO: Move this function into a file in the lib folder to help find easier if needed
 // function to get the date and time formated correctly
 export const formatDateTime = (
@@ -39,7 +44,7 @@ export default function FeaturedEvents() {
       try {
         setIsLoading(true);
         setHasError(false);
-        const res = await fetch("http://localhost:8000/events");
+        const res = await fetch(`${API_BASE_URL}/events`);
         if (!res.ok) throw new Error("Failed to load events");
         const data = await res.json();
         setEvents(Array.isArray(data) ? data : []);
