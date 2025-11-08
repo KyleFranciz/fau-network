@@ -6,6 +6,7 @@ export default function Navbar() {
   return (
     <nav className="border-b max-w-7xl w-full mx-auto px-6 mt-4 sticky top-4  py-4 z-100 rounded-4xl bg-white/25 backdrop-blur-sm border-white/20 shadow-sm">
       <div className="mx-auto">
+        {/* TODO: MAKE SURE THAT WHEN THE PAGE IS NAVIGATED TO THE PAGE STARTS AT THE TOP */}
         {/* WARNING: EVERY THING BELLOW SHOULD BE EDITED IF WORKING ON THE NAVBAR COMPONENT */}
         {/* NOTE: The link components will be used to route to other pages in the app, best to use in the navbar */}
         <div className="flex items-center">

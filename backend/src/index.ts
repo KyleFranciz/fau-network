@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { supabase } from "./supabaseClient";
 import cors from "cors";
 import { request } from "http";
+import { CategoryParams } from "./schema/category.schema";
 
 // env variables that are needed to run the server
 dotenv.config();
@@ -74,8 +75,8 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
 // TODO: route to get all the study events from the database
 // NOTE: gets the category from the request param to search supabase table
 app.get(
-  "category/:categoryId",
-  async (_request: Request, response: Response) => {
+  "events/category/:categoryId",
+  async (_request: Request<CategoryParams>, response: Response) => {
     try {
       // fetch events from the study category in display them on the frontend
       // TODO: CHANGE THE VALUE TO THE REQUEST ROUTIING WHEN SELECTED
@@ -85,7 +86,7 @@ app.get(
 
       const { data, error } = await supabase
         .from("events")
-        .select(``) // TODO: change to include the column names from the event table and the needed data from the category table
+        .select(`*, categories(*)`) // NOTE: get all the elements for the events as well as the data from the category table
         .eq("category_id", categoryId);
 
       // check if there was an error

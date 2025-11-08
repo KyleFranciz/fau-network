@@ -100,7 +100,7 @@ export default function FeaturedEvents() {
               date={formatDateTime(event.date ?? event.created_at, event.time)}
               title={event.title ?? "Untitled Event"}
               host={event.host_id ?? "Unknown"}
-              attendees={event.attedees_count ?? 0}
+              attendees={event.attendees_count ?? 0}
               image={event.image_url ?? ""}
               onJoinClick={handleJoinClick}
             />
