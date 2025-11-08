@@ -1,4 +1,5 @@
 import { queryClient } from "@/lib/queryClient"; // used to make prefetches for the routing in the navbar
+import { eventPagePrefetcher } from "@/prefetchers/eventPagePrefetcher";
 import { homePagePrefetcher } from "@/prefetchers/homePagePrefetcher";
 import { Link } from "react-router";
 
@@ -25,6 +26,7 @@ export default function Navbar() {
             <Link
               to="/events"
               className="text-lg font-semibold text-gray-800 transition-colors hover:text-gray-900"
+              onMouseEnter={() => eventPagePrefetcher(queryClient)}
             >
               Events
             </Link>

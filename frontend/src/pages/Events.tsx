@@ -28,12 +28,10 @@ export default function EventsPage() {
     { id: "7", label: "Professional" },
   ];
 
-  //NOTE: useQuery is used in the EventSection component to get the different category events
-
   return (
     <div className="w-full">
       <section className="w-full flex justify-center">
-        <div className="w-fit items-center flex justify-center mt-8">
+        <div className="w-fit items-center flex justify-center mt-8 mb-7">
           <div className="">
             <SearchBar />
           </div>
@@ -72,6 +70,7 @@ export default function EventsPage() {
       <section>
         <EventSection
           title={`${categoryName} Events`}
+          // TODO: get the description of the category from the backend, might just place it in the obj
           description="Here are some of the study events going on around campus"
           queryKey={["events", "category", categoryId]}
           queryFn={() => getCategoryEvents(categoryId)}

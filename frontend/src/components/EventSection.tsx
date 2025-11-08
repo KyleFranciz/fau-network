@@ -37,7 +37,7 @@ export default function EventSection({
   };
 
   return (
-    <section className="mb-7 mt-7">
+    <section className="mb-6 mt-5">
       <div className="container mx-auto px-4">
         <div className="mb-5">
           <h2 className="text-3xl md:text-4xl font-bold mb-1">{title}</h2>

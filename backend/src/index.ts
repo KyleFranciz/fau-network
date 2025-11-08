@@ -54,7 +54,8 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
     const { data, error } = await supabase
       .from("events")
       .select("*")
-      .gte("attendees_count", 10); // NOTE: get value greater than or equal to...
+      .gte("attendees_count", "10"); // NOTE: get value greater than or equal to...
+    //NOTE: changed value to string to cause supabase makes evals based of strings
 
     // check if there is an error when getting the data from supabase
     if (error) {
