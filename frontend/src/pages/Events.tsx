@@ -12,12 +12,12 @@ import {
 
 // NOTE: SEARCHBAR WILL JUST BE FOR FILTERING THE EVENTS IN THE PAGE
 export default function EventsPage() {
-  // state to hold the category from the backend and update when switched
+  // state to hold the category and the category name from the category obj and update when switched
   const [categoryId, setCategoryId] = useState<string>("1");
   const [categoryName, setCategoryName] = useState<string>("Community");
 
-  // category selector options to map through on the select section
-  // TODO: UPDATE THE SUPABASE CATEGORY TABLE TO NEW ID'S
+  //NOTE: might add description to change as well when switching components
+  //NOTE: category selector options to map through on the select section
   const categories = [
     { id: "1", label: "Community" },
     { id: "2", label: "Social" },
@@ -64,14 +64,13 @@ export default function EventsPage() {
             </Select>
           </div>
         </div>
-        {/* TODO: Add a searchbar here */}
-        {/* TODO: Add a selector to help with the sorting of the events */}
       </section>
+      {/* NOTE: Section that displays the cards in the current section */}
       <section>
         <EventSection
           title={`${categoryName} Events`}
           // TODO: get the description of the category from the backend, might just place it in the obj
-          description="Here are some of the study events going on around campus"
+          description={`Here are some of the ${categoryName} events going on around campus`}
           queryKey={["events", "category", categoryId]}
           queryFn={() => getCategoryEvents(categoryId)}
         />

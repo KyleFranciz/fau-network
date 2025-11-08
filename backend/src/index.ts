@@ -5,7 +5,7 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import { supabase } from "./supabaseClient";
 import cors from "cors";
-import { request } from "http";
+// import { request } from "http";
 import { CategoryParams } from "./schema/category.schema";
 
 // env variables that are needed to run the server
@@ -73,7 +73,6 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
     response.status(500).json({ error: "Internal Server Error" });
   }
 });
-// TODO: route to get all the study events from the database
 // NOTE: gets the category from the request param to search supabase table
 app.get(
   "/events/category/:categoryId",
@@ -111,7 +110,7 @@ app.get(
   },
 );
 
-//TODO: route to get the tech events from the database
+// TODO: make a route to get the profile data from supabase user table for profile pictures and user display names
 
 // start the actual server
 // listen - has the port run on 5000 and then the 0.0.0.0 listens to everything so that docker can connect and run

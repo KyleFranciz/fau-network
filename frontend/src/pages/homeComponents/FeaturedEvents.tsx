@@ -1,11 +1,7 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import EventCard from "./EventCard";
 import type { EventI } from "@/schemas/Events.interface";
-
-const API_BASE_URL =
-  typeof import.meta !== "undefined" && import.meta.env.VITE_API_URL
-    ? import.meta.env.VITE_API_URL
-    : "http://localhost:8000";
+import { getFeaturedEvents } from "@/services/eventFetchers";
 
 // TODO: Move this function into a file in the lib folder to help find easier if needed
 // function to get the date and time formated correctly
@@ -33,30 +29,18 @@ export const formatDateTime = (
 };
 
 export default function FeaturedEvents() {
-  const [events, setEvents] = useState<EventI[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [hasError, setHasError] = useState<boolean>(false);
+  const {
+    data: events = [],
+    isLoading,
+    isError,
+  } = useQuery<EventI[]>({
+    queryKey: ["events", "featured"],
 
-  // TODO: REFACTOR TO AXIOS TO MAKE DATA MANAGEMENT EASIER
-  // TODO: ALSO ADD USEQUERY TO HELP WITH REFETCHES FOR NECESSARY PAGES AND COMPONENTS.
-  useEffect(() => {
-    const fetchEvents = async (): Promise<void> => {
-      try {
-        setIsLoading(true);
-        setHasError(false);
-        const res = await fetch(`${API_BASE_URL}/events`);
-        if (!res.ok) throw new Error("Failed to load events");
-        const data = await res.json();
-        setEvents(Array.isArray(data) ? data : []);
-      } catch (_err) {
-        setHasError(true);
-        setEvents([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchEvents();
-  }, []);
+    queryFn: getFeaturedEvents,
+  });
+
+  // NOTE: made variable to only house 6 peices of data to render out for the component
+  const featuredToShow = events.slice(0, 6);
 
   const handleJoinClick = (): void => {
     console.log("Join event clicked");
@@ -81,20 +65,20 @@ export default function FeaturedEvents() {
           </div>
         )}
 
-        {!isLoading && hasError && (
+        {!isLoading && isError && (
           <div className="rounded-2xl border border-border bg-card p-6 text-destructive shadow-sm">
             Could not load events.
           </div>
         )}
 
-        {!isLoading && !hasError && events.length === 0 && (
+        {!isLoading && !isError && events.length === 0 && (
           <div className="rounded-2xl border border-border bg-card p-6 text-muted-foreground shadow-sm">
             No events yet. Check back soon.
           </div>
         )}
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => (
+          {featuredToShow.map((event) => (
             <EventCard
               key={event.id}
               date={formatDateTime(event.date ?? event.created_at, event.time)}
