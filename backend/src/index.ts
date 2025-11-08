@@ -75,7 +75,7 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
 // TODO: route to get all the study events from the database
 // NOTE: gets the category from the request param to search supabase table
 app.get(
-  "events/category/:categoryId",
+  "/events/category/:categoryId",
   async (_request: Request<CategoryParams>, response: Response) => {
     try {
       // fetch events from the study category in display them on the frontend
@@ -83,6 +83,8 @@ app.get(
 
       // save the categoryId from request
       const { categoryId } = _request.params;
+
+      console.log(categoryId);
 
       const { data, error } = await supabase
         .from("events")

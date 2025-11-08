@@ -1,6 +1,6 @@
 //NOTE: this file will have the fetching functions that interact with the backend api, these functions will be used in useQueries to handle fetching data for different events for the components that need them
 import axios from "axios";
-import type { EventI } from "@/schemas/Events";
+import type { EventI } from "@/schemas/Events.interface";
 
 // import the .env variable
 const API_BASE_URL =

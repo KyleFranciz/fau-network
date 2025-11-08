@@ -28,7 +28,7 @@ export interface EventI {
   id: string;
   title: string | null;
   description?: string | null;
-  catergory: { id: string; name: string }; // needed to help making sure everything sorts right
+  catergory: { id: string; name: string; description: string }; // needed to help making sure everything sorts right
   image_url: string | null;
   created_at: string | null;
   date: string | null;

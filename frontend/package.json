@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.2.6",
     "@splidejs/react-splide": "^0.7.12",
     "@supabase/supabase-js": "^2.78.0",
     "@tailwindcss/vite": "^4.1.14",

@@ -2,7 +2,7 @@ import type { QueryKey } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import EventCard from "@/pages/homeComponents/EventCard";
 import { formatDateTime } from "@/pages/homeComponents/FeaturedEvents";
-import type { EventI } from "@/schemas/Events";
+import type { EventI } from "@/schemas/Events.interface";
 import { getFeaturedEvents } from "@/services/eventFetchers";
 
 interface EventSectionProps {

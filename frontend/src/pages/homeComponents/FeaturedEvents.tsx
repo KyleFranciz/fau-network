@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import EventCard from "./EventCard";
-import type { EventI } from "@/schemas/Events";
+import type { EventI } from "@/schemas/Events.interface";
 
 const API_BASE_URL =
   typeof import.meta !== "undefined" && import.meta.env.VITE_API_URL
