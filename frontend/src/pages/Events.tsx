@@ -1,6 +1,6 @@
 import EventSection from "@/components/EventSection";
 import SearchBar from "../components/SearchBar";
-import { getPopularEvents, getCategoryEvents } from "@/services/eventFetchers";
+import { getCategoryEvents } from "@/services/eventFetchers";
 import { useState } from "react";
 import {
   Select,
@@ -14,7 +14,7 @@ import {
 export default function EventsPage() {
   // state to hold the category from the backend and update when switched
   const [categoryId, setCategoryId] = useState<string>("1");
-  // const [categoryName, setCategoryName] = useState<string>("");
+  const [categoryName, setCategoryName] = useState<string>("Community");
 
   // category selector options to map through on the select section
   // TODO: UPDATE THE SUPABASE CATEGORY TABLE TO NEW ID'S
@@ -40,7 +40,16 @@ export default function EventsPage() {
           {/* TODO: ADDED SHADCN SELECTOR TO GET EVENTS TO LOAD OUT ON THE PAGE DEPENDING ON THE EVENT (Map through categories) */}
           <div className="ml-1.5">
             <Select
-              onValueChange={(value) => setCategoryId(value)}
+              onValueChange={(value) => {
+                // set the categoryId to make the query to the useQuery
+                setCategoryId(value);
+                // search the categories array to find the id in the obj that matches with the value
+                const selectedCategory = categories.find(
+                  (cat) => cat.id === value,
+                );
+                // if the category is found then set the set the category name state to the label name
+                if (selectedCategory) setCategoryName(selectedCategory.label);
+              }}
               defaultValue={categoryId}
             >
               <SelectTrigger className="w-[200px]">
@@ -62,21 +71,10 @@ export default function EventsPage() {
       </section>
       <section>
         <EventSection
-          title="Study Events"
+          title={`${categoryName} Events`}
           description="Here are some of the study events going on around campus"
           queryKey={["events", "category", categoryId]}
           queryFn={() => getCategoryEvents(categoryId)}
-        />
-
-        <EventSection
-          title="Featured Events"
-          description="Here are some of the events going on around campus"
-        />
-        <EventSection
-          title="Popular Events"
-          description="Here are some of the popular events going on around campus"
-          queryKey={["events", "popular"]}
-          queryFn={getPopularEvents}
         />
       </section>
     </div>

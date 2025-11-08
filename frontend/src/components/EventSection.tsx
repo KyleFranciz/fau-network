@@ -8,6 +8,7 @@ import { getFeaturedEvents } from "@/services/eventFetchers";
 interface EventSectionProps {
   title: string;
   description?: string;
+  subtitle?: string;
   queryKey?: QueryKey;
   queryFn?: () => Promise<EventI[]>;
 }

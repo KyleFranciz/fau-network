@@ -84,6 +84,8 @@ app.get(
       // save the categoryId from request
       const { categoryId } = _request.params;
 
+      //NOTE: might do a check to see if the param is equal to all's id and look up all events and then return
+
       console.log(categoryId);
 
       const { data, error } = await supabase
