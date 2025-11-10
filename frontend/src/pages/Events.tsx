@@ -13,12 +13,14 @@ import {
 // NOTE: SEARCHBAR WILL JUST BE FOR FILTERING THE EVENTS IN THE PAGE
 export default function EventsPage() {
   // state to hold the category and the category name from the category obj and update when switched
-  const [categoryId, setCategoryId] = useState<string>("1");
-  const [categoryName, setCategoryName] = useState<string>("Community");
+  const [categoryId, setCategoryId] = useState<string>("0");
+  const [categoryName, setCategoryName] = useState<string>("All");
 
-  //NOTE: might add description to change as well when switching components
+  //TODO: might add description to change as well when switching components
   //NOTE: category selector options to map through on the select section
   const categories = [
+    // might add a popular category to chose from
+    { id: "0", label: "All" },
     { id: "1", label: "Community" },
     { id: "2", label: "Social" },
     { id: "3", label: "Tech" },
@@ -35,9 +37,10 @@ export default function EventsPage() {
           <div className="">
             <SearchBar />
           </div>
-          {/* TODO: ADDED SHADCN SELECTOR TO GET EVENTS TO LOAD OUT ON THE PAGE DEPENDING ON THE EVENT (Map through categories) */}
+          {/* NOTE: ADDED SHADCN SELECTOR TO GET EVENTS TO LOAD OUT ON THE PAGE DEPENDING ON THE EVENT (Map through categories) */}
           <div className="ml-1.5">
             <Select
+              // TODO: make into a function to help clean up, refactor later
               onValueChange={(value) => {
                 // set the categoryId to make the query to the useQuery
                 setCategoryId(value);

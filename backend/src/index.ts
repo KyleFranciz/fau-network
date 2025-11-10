@@ -38,6 +38,8 @@ app.get("/", (_request: Request, response: Response) => {
   response.send("If your seeing this the backend request is working properly");
 });
 
+// TODO: Make a post route for the events to be uploaded to supabase
+
 // supabase route to fetch all events (featured events)
 app.get("/events", async (_request: Request, response: Response) => {
   const { data, error } = await supabase.from("events").select("*");

@@ -19,8 +19,7 @@ export const getFeaturedEvents = async (): Promise<EventI[]> => {
   return Array.isArray(response.data) ? response.data : [];
 };
 
-// TODO: make a function to get the popular events from the backend
-// TODO: FIGURE OUT WHY THE FETCH IS GIVING A 404
+// function to get popular events from the backend
 export const getPopularEvents = async (): Promise<EventI[]> => {
   // get the data from the popular route in the backend
   const response = await axios.get<EventI[]>(`${API_BASE_URL}/events/popular`);
@@ -30,10 +29,17 @@ export const getPopularEvents = async (): Promise<EventI[]> => {
 };
 
 // function to get Study Events
+// TODO: Add in pagination to switch pages to cycle through the events
+// TODO: Add at later date test the routing to make sure that this is efficient
 export const getCategoryEvents = async (
   categoryId: string, // categoryId passed in so and sent as a param to the backend
 ): Promise<EventI[]> => {
-  // get the data for the study events from the backend
+  // check if the categoryId is for "All"
+  if (categoryId === "0") {
+    // run the function  to get the featured events and return them to the frontend
+    getFeaturedEvents();
+  }
+  // otherwise: get the data for the study events from the backend
   const response = await axios.get<EventI[]>(
     `${API_BASE_URL}/events/category/${categoryId}`,
   );
