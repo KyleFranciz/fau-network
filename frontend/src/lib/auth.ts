@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient";
+import checkUser from "@/hooks/checkUser";
 
 // auth functions or supabase
 // TODO: add username param to also send the username to the profile page for when the user is logged in
@@ -8,6 +9,21 @@ export async function signUp(
   firstName: string,
   lastName: string,
 ) {
+
+  const { data: existingUser, error: fetchError } = await supabase
+  .from("users")
+  .select("id")
+  .eq("email", email)
+  .limit(1)
+  .single();
+  
+  if (fetchError) throw fetchError;
+
+  if (existingUser) {
+    throw new Error("An account with this email already exists. Please sign in instead.");
+  }
+
+  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -19,8 +35,21 @@ export async function signUp(
       emailRedirectTo: `${window.location.origin}/auth/callback`, // added window.location.origin to make it work in production or if our dev team has a differnet local host url
     },
   });
-  // TODO: add the data to profiles table in supabase (have the username sent to the backend)
+
+  console.log(data);
+  
+
   if (error) throw error;
+
+  if (data?.user?.id ) {
+    const { error: profileError } = await supabase.from("users").upsert({
+      id: data.user.id,
+      email: data.user.email,
+      full_name: `${firstName} ${lastName}`,
+    });
+    console.log(profileError);
+    if (profileError) throw profileError;
+  }
 
   return data;
 }
