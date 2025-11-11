@@ -11,7 +11,12 @@ import LoginPage from "./pages/Login";
 import SignUpPage from "./pages/SignUp";
 import ProfilePage from "./pages/Profile";
 import NotFoundPage from "./pages/NotFound";
+import AuthCallbackPage from "./pages/AuthCallback";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
 // TODO: use the useParam function to help with the routing to the eventId page to when elements are clicked on the route to different pages
+
+//NOTE: set up for the queryClient so that we can use useQuery to get data across the application
 
 const router = createBrowserRouter([
   {
@@ -40,6 +45,10 @@ const router = createBrowserRouter([
         element: <SignUpPage />,
       },
       {
+        path: "auth/callback", // this is for handling email verification callback
+        element: <AuthCallbackPage />,
+      },
+      {
         path: "profile", // this is for the profile page to edit the account information
         element: <ProfilePage />,
       },
@@ -53,6 +62,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </React.StrictMode>,
 );
