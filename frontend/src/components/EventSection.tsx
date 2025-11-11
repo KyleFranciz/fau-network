@@ -4,6 +4,7 @@ import EventCard from "@/pages/homeComponents/EventCard";
 import { formatDateTime } from "@/pages/homeComponents/FeaturedEvents";
 import type { EventI } from "@/schemas/Events.interface";
 import { getFeaturedEvents } from "@/services/eventFetchers";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 interface EventSectionProps {
   title: string;
@@ -35,6 +36,7 @@ export default function EventSection({
   const handleJoinClick = (): void => {
     console.log("Join event clicked");
   };
+  const skeletonCards = Array.from({ length: 6 });
 
   return (
     <section className="mb-6 mt-5">
@@ -47,8 +49,14 @@ export default function EventSection({
         </div>
 
         {isLoading && (
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            Loading…
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {skeletonCards.map((_, index) => (
+              <SkeletonLoader
+                key={`event-section-skeleton-${index}`}
+                withImage
+                lines={4}
+              />
+            ))}
           </div>
         )}
 
