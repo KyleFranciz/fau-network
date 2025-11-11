@@ -16,14 +16,13 @@ export async function signUp(
   .eq("email", email)
   .limit(1)
   .single();
-  
+
   if (fetchError) throw fetchError;
 
   if (existingUser) {
     throw new Error("An account with this email already exists. Please sign in instead.");
   }
 
-  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -36,9 +35,6 @@ export async function signUp(
     },
   });
 
-  console.log(data);
-  
-
   if (error) throw error;
 
   if (data?.user?.id ) {
@@ -47,7 +43,7 @@ export async function signUp(
       email: data.user.email,
       full_name: `${firstName} ${lastName}`,
     });
-    console.log(profileError);
+    
     if (profileError) throw profileError;
   }
 
