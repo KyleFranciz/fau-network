@@ -16,6 +16,7 @@ export async function signUp(
   .eq("email", email)
   .limit(1)
   .single();
+  
 
   if (fetchError) throw fetchError;
 
@@ -43,7 +44,7 @@ export async function signUp(
       email: data.user.email,
       full_name: `${firstName} ${lastName}`,
     });
-    
+
     if (profileError) throw profileError;
   }
 
