@@ -3,6 +3,7 @@ import EventCard from "./EventCard";
 import { formatDateTime } from "./FeaturedEvents";
 import type { EventI } from "@/schemas/Events.interface";
 import { getPopularEvents } from "@/services/eventFetchers";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 export default function PopularEvents() {
   const {
@@ -20,6 +21,7 @@ export default function PopularEvents() {
   const handleJoinClick = (): void => {
     console.log("Join event clicked");
   };
+  const skeletonCards = Array.from({ length: 6 });
 
   return (
     <section className="mb-16">
@@ -33,8 +35,14 @@ export default function PopularEvents() {
           </p>
         </div>
         {isLoading && (
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            Loading…
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {skeletonCards.map((_, index) => (
+              <SkeletonLoader
+                key={`popular-skeleton-${index}`}
+                withImage
+                lines={4}
+              />
+            ))}
           </div>
         )}
 
@@ -51,7 +59,7 @@ export default function PopularEvents() {
         )}
 
         {!isLoading && !isError && events.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {popularToShow.map((event) => (
               <EventCard
                 key={event.id}

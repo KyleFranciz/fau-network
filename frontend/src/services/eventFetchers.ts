@@ -37,7 +37,7 @@ export const getCategoryEvents = async (
   // check if the categoryId is for "All"
   if (categoryId === "0") {
     // run the function  to get the featured events and return them to the frontend
-    getFeaturedEvents();
+    return getFeaturedEvents();
   }
   // otherwise: get the data for the study events from the backend
   const response = await axios.get<EventI[]>(
