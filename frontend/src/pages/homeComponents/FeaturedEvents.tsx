@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import EventCard from "./EventCard";
 import type { EventI } from "@/schemas/Events.interface";
 import { getFeaturedEvents } from "@/services/eventFetchers";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 // TODO: Move this function into a file in the lib folder to help find easier if needed
 // function to get the date and time formated correctly
@@ -42,6 +43,8 @@ export default function FeaturedEvents() {
   // NOTE: made variable to only house 6 peices of data to render out for the component
   const featuredToShow = events.slice(0, 6);
 
+  const skeletonCards = Array.from({ length: 6 }); // render out 6 skeletonCards
+
   const handleJoinClick = (): void => {
     console.log("Join event clicked");
   };
@@ -59,12 +62,6 @@ export default function FeaturedEvents() {
           </p>
         </div>
 
-        {isLoading && (
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            Loading…
-          </div>
-        )}
-
         {!isLoading && isError && (
           <div className="rounded-2xl border border-border bg-card p-6 text-destructive shadow-sm">
             Could not load events.
@@ -76,20 +73,36 @@ export default function FeaturedEvents() {
             No events yet. Check back soon.
           </div>
         )}
+        {isLoading && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {skeletonCards.map((_, index) => (
+              <SkeletonLoader
+                key={`event-skeleton-${index}`}
+                withImage
+                lines={4}
+              />
+            ))}
+          </div>
+        )}
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featuredToShow.map((event) => (
-            <EventCard
-              key={event.id}
-              date={formatDateTime(event.date ?? event.created_at, event.time)}
-              title={event.title ?? "Untitled Event"}
-              host={event.host_id ?? "Unknown"}
-              attendees={event.attendees_count ?? 0}
-              image={event.image_url ?? ""}
-              onJoinClick={handleJoinClick}
-            />
-          ))}
-        </div>
+        {!isLoading && !isError && events.length > 0 && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {featuredToShow.map((event) => (
+              <EventCard
+                key={event.id}
+                date={formatDateTime(
+                  event.date ?? event.created_at,
+                  event.time,
+                )}
+                title={event.title ?? "Untitled Event"}
+                host={event.host_id ?? "Unknown"}
+                attendees={event.attendees_count ?? 0}
+                image={event.image_url ?? ""}
+                onJoinClick={handleJoinClick}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -28,7 +28,7 @@ export const getPopularEvents = async (): Promise<EventI[]> => {
   return Array.isArray(response.data) ? response.data : [];
 };
 
-// function to get Study Events
+// function to get Categorized Events
 // TODO: Add in pagination to switch pages to cycle through the events
 // TODO: Add at later date test the routing to make sure that this is efficient
 export const getCategoryEvents = async (
