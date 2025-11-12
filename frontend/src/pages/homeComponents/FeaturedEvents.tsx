@@ -3,6 +3,8 @@ import EventCard from "./EventCard";
 import type { EventI } from "@/schemas/Events.interface";
 import { getFeaturedEvents } from "@/services/eventFetchers";
 import SkeletonLoader from "@/components/SkeletonLoader";
+import RegisterModal from "@/components/registerModal";
+import { useState } from "react";
 
 // TODO: Move this function into a file in the lib folder to help find easier if needed
 // function to get the date and time formated correctly
@@ -39,15 +41,20 @@ export default function FeaturedEvents() {
 
     queryFn: getFeaturedEvents,
   });
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [currentSelectedEventId, setCurrentSelectedEventId] = useState<string | null>(null);
 
   // NOTE: made variable to only house 6 peices of data to render out for the component
   const featuredToShow = events.slice(0, 6);
 
   const skeletonCards = Array.from({ length: 6 }); // render out 6 skeletonCards
 
-  const handleJoinClick = (): void => {
+  const handleJoinClick = (eventId: string): void => {
     console.log("Join event clicked");
+    setCurrentSelectedEventId(eventId);
+    setRegisterModalOpen(true);
   };
+
 
   // NOTE: Made a small tweak to the spacing from the top of the featured events componet
   return (
@@ -84,6 +91,9 @@ export default function FeaturedEvents() {
             ))}
           </div>
         )}
+        
+        {registerModalOpen && currentSelectedEventId && <RegisterModal eventId={currentSelectedEventId} registerModalOpen={registerModalOpen} setRegisterModalOpen={setRegisterModalOpen}/>}
+        
 
         {!isLoading && !isError && events.length > 0 && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -98,7 +108,7 @@ export default function FeaturedEvents() {
                 host={event.host_id ?? "Unknown"}
                 attendees={event.attendees_count ?? 0}
                 image={event.image_url ?? ""}
-                onJoinClick={handleJoinClick}
+                onJoinClick={() => handleJoinClick(event.id)}
               />
             ))}
           </div>

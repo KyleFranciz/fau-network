@@ -49,6 +49,17 @@ app.get("/events", async (_request: Request, response: Response) => {
   response.json(data);
 });
 
+// supabase route to fetch an event by id
+
+app.get("/event/:eventId", async (_request: Request, response: Response) => {
+  const { eventId } = _request.params;
+  const { data, error } = await supabase.from("events").select("*").eq("id", eventId);
+  if (error) {
+    response.status(500).json({ error: error.message });
+  }
+  response.json(data);
+});
+
 // TODO: route to get all the popular events
 app.get("/events/popular", async (_request: Request, response: Response) => {
   try {
