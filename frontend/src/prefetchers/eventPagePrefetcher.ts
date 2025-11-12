@@ -6,7 +6,7 @@ import type { QueryClient } from "@tanstack/react-query"; // QueryClient obj pas
 // prefetcher for the events page
 export const eventPagePrefetcher = async (queryClient: QueryClient) => {
   // make a variable to store the initial category to send off to make the fetch
-  const initialCategory = "1";
+  const initialCategory = "0";
 
   // make the prefetcher for the initial category on the page
   await queryClient.prefetchQuery({

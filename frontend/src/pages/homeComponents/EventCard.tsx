@@ -1,4 +1,7 @@
+import { Link } from "react-router";
+
 interface EventCardProps {
+  eventId: string;
   date: string;
   title: string;
   host: string;
@@ -9,6 +12,7 @@ interface EventCardProps {
 
 // TODO: REFACTOR LATER ON TO PASS IN ONE PROP OBJECT INTO THIS COMPONENT
 export default function EventCard({
+  eventId,
   date,
   title,
   host,
@@ -17,7 +21,10 @@ export default function EventCard({
   onJoinClick,
 }: EventCardProps) {
   return (
-    <div className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer">
+    <Link
+      to={eventId}
+      className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer"
+    >
       <div className="relative h-56 bg-muted rounded-3xl overflow-hidden">
         <img
           src={image}
@@ -57,6 +64,6 @@ export default function EventCard({
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
