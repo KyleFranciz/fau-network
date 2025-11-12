@@ -1,0 +1,25 @@
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Vitest cache
+.vitest/
+
+# Coverage reports
+coverage/
+
+# Vite / build artifacts
+dist/
+*.tsbuildinfo
+vite.config.ts.timestamp*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Snapshots (optional)
+__snapshots__/
