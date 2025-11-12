@@ -22,7 +22,7 @@ export default function EventCard({
 }: EventCardProps) {
   return (
     <Link
-      to={eventId}
+      to={`/events/${eventId}`}
       className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer"
     >
       <div className="relative h-56 bg-muted rounded-3xl overflow-hidden">
