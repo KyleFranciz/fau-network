@@ -47,5 +47,15 @@ export const getCategoryEvents = async (
   // check the data to make sure its an array, return the data, if not then return an empty array
   return Array.isArray(response.data) ? response.data : [];
 };
-
-// function to get Sports Events
+// function to get a specific event by id
+export const getSpecificEvent = async (
+  eventId: string | undefined,
+): Promise<EventI> => {
+  // check if the id is undefined
+  if (typeof eventId === "undefined") {
+    throw new Error("The eventId is undefined");
+  }
+  // otherwise return the data
+  const response = await axios.get<EventI>(`${API_BASE_URL}/events/${eventId}`);
+  return response.data;
+};

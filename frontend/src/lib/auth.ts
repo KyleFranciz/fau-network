@@ -9,18 +9,18 @@ export async function signUp(
   firstName: string,
   lastName: string,
 ) {
-
   const { data: existingUser, error: fetchError } = await supabase
-  .from("users")
-  .select("id")
-  .eq("email", email)
-  .limit(1)
-  .single();
+    .from("users")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle(); // NOTE: made a change so that form doesn't give new users and error
 
   if (fetchError) throw fetchError;
 
   if (existingUser) {
-    throw new Error("An account with this email already exists. Please sign in instead.");
+    throw new Error(
+      "An account with this email already exists. Please sign in instead.",
+    );
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -37,13 +37,13 @@ export async function signUp(
 
   if (error) throw error;
 
-  if (data?.user?.id ) {
+  if (data?.user?.id) {
     const { error: profileError } = await supabase.from("users").upsert({
       id: data.user.id,
       email: data.user.email,
       full_name: `${firstName} ${lastName}`,
     });
-    
+
     if (profileError) throw profileError;
   }
 
@@ -66,4 +66,3 @@ export async function signOut() {
 
   if (error) throw error;
 }
-

@@ -90,6 +90,7 @@ export default function FeaturedEvents() {
             {featuredToShow.map((event) => (
               <EventCard
                 key={event.id}
+                eventId={event.id}
                 date={formatDateTime(
                   event.date ?? event.created_at,
                   event.time,

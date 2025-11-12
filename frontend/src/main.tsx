@@ -14,9 +14,12 @@ import NotFoundPage from "./pages/NotFound";
 import AuthCallbackPage from "./pages/AuthCallback";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./context/AuthContext";
 // TODO: use the useParam function to help with the routing to the eventId page to when elements are clicked on the route to different pages
 
 //NOTE: set up for the queryClient so that we can use useQuery to get data across the application
+
+// TODO: add in <AuthProvider> component to wrap the route on so that the application can access the user
 
 const router = createBrowserRouter([
   {
@@ -63,7 +66,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>,
 );

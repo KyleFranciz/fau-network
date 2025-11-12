@@ -63,6 +63,7 @@ export default function PopularEvents() {
             {popularToShow.map((event) => (
               <EventCard
                 key={event.id}
+                eventId={event.id}
                 date={formatDateTime(
                   event.date ?? event.created_at,
                   event.time,
