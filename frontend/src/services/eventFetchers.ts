@@ -25,21 +25,25 @@ export const getFeaturedEvents = async (): Promise<EventI[]> => {
   }
 };
 
-export const getEventById = async (eventId: string): Promise<EventI[]> => {
+export const getEventById = async (eventId: string): Promise<EventI | null> => {
   try {
-    const response = await axios.get<EventI[]>(`${API_BASE_URL}/event/${eventId}`);
-    return Array.isArray(response.data) ? response.data : [];
+    const response = await axios.get<EventI>(
+      `${API_BASE_URL}/event/${eventId}`,
+    );
+    return response.data;
   } catch (error) {
     console.error("Error fetching event by id:", error);
-    return [];
+    return null;
   }
 };
 
 // function to get popular events from the backend
 export const getPopularEvents = async (): Promise<EventI[]> => {
   try {
-  // get the data from the popular route in the backend
-  const response = await axios.get<EventI[]>(`${API_BASE_URL}/events/popular`);
+    // get the data from the popular route in the backend
+    const response = await axios.get<EventI[]>(
+      `${API_BASE_URL}/events/popular`,
+    );
 
     // check if the data is an array, return if it is, empty array if not
     return Array.isArray(response.data) ? response.data : [];

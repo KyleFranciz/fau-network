@@ -80,6 +80,7 @@ export default function EventDetailPage() {
                 {event?.date ? formatDateTime(event.date) : "date loading..."}
               </h3>
             </div>
+            <h3 className="font-semibold">{event?.attendees_count ?? ""}</h3>
             {event?.description ? (
               <p className="text-lg text-muted-foreground">
                 {event.description}

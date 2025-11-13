@@ -54,7 +54,10 @@ app.get("/events", async (_request: Request, response: Response) => {
 
 app.get("/event/:eventId", async (_request: Request, response: Response) => {
   const { eventId } = _request.params;
-  const { data, error } = await supabase.from("events").select("*").eq("id", eventId);
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId);
   if (error) {
     response.status(500).json({ error: error.message });
   }
@@ -154,48 +157,58 @@ app.get(
 );
 
 // route to register for an event
-app.post("/events/register/:eventId", async (_request: Request<EventRegisterParams> , response: Response) => {
-  try {
-    const { eventId, userId, registeredDate } = _request.body;
-    const { data, error } = await supabase.from("event_attendees").insert({ event_id: eventId, user_id: userId, status: "registered", joined_at: registeredDate });
-    if (error) {
-      console.error("Supabase Error:", error.message);
-      response.status(500).json({ error: error.message });
-      return;
+app.post(
+  "/events/register/:eventId",
+  async (_request: Request<EventRegisterParams>, response: Response) => {
+    try {
+      const { eventId, userId, registeredDate } = _request.body;
+      const { data, error } = await supabase
+        .from("event_attendees")
+        .insert({
+          event_id: eventId,
+          user_id: userId,
+          status: "registered",
+          joined_at: registeredDate,
+        });
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        response.status(500).json({ error: error.message });
+        return;
+      }
+
+      // After the user is registered, update the event attendees count
+      // Fetch the current attendees_count
+      const { data: currentEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("attendees_count")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError) {
+        console.error("Supabase Fetch Error:", fetchError.message);
+        response.status(500).json({ error: fetchError.message });
+        return;
+      }
+
+      // Update the attendees_count
+      const { data: updatedEvent, error: updateError } = await supabase
+        .from("events")
+        .update({ attendees_count: (currentEvent?.attendees_count || 0) + 1 })
+        .eq("id", eventId);
+
+      if (updateError) {
+        console.error("Supabase Update Error:", updateError.message);
+        response.status(500).json({ error: updateError.message });
+        return;
+      }
+
+      response.json(updatedEvent);
+    } catch (err) {
+      console.error("Server Error", err);
+      response.status(500).json({ error: "Internal Server Error" });
     }
-    
-    // After the user is registered, update the event attendees count
-    // Fetch the current attendees_count
-    const { data: currentEvent, error: fetchError } = await supabase
-      .from("events")
-      .select("attendees_count")
-      .eq("id", eventId)
-      .single();
-
-    if (fetchError) {
-      console.error("Supabase Fetch Error:", fetchError.message);
-      response.status(500).json({ error: fetchError.message });
-      return;
-    }
-
-    // Update the attendees_count
-    const { data: updatedEvent, error: updateError } = await supabase
-      .from("events")
-      .update({ attendees_count: (currentEvent?.attendees_count || 0) + 1 })
-      .eq("id", eventId);
-
-    if (updateError) {
-      console.error("Supabase Update Error:", updateError.message);
-      response.status(500).json({ error: updateError.message });
-      return;
-    }
-
-    response.json(updatedEvent);
-  } catch (err) {
-    console.error("Server Error", err);
-    response.status(500).json({ error: "Internal Server Error" });
-  }
-});
+  },
+);
 
 // TODO: make a route to get the profile data from supabase user table for profile pictures and user display names
 
