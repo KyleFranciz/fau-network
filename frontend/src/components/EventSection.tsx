@@ -77,6 +77,7 @@ export default function EventSection({
             {events.map((event) => (
               <EventCard
                 key={event.id}
+                eventId={event.id}
                 // NOTE: Consistent display using shared formatter.
                 date={formatDateTime(
                   event.date ?? event.created_at,

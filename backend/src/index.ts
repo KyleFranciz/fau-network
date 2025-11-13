@@ -7,6 +7,7 @@ import { supabase } from "./supabaseClient";
 import cors from "cors";
 // import { request } from "http";
 import { CategoryParams } from "./schema/category.schema";
+import { EventParams } from "./schema/events.schema";
 
 // env variables that are needed to run the server
 dotenv.config();
@@ -86,6 +87,35 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
     response.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// route to fetch a specific event by id
+app.get(
+  "/events/:eventId",
+  async (request: Request<EventParams>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", eventId)
+        .single();
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      if (!data) {
+        return response.status(404).json({ error: "Event not found" });
+      }
+
+      return response.json(data);
+    } catch (err) {
+      console.error("Server Error:", err);
+      response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
 // NOTE: gets the category from the request param to search supabase table
 app.get(
   "/events/category/:categoryId",
