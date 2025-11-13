@@ -12,6 +12,7 @@ import checkUser from "@/hooks/checkUser";
 import { useEffect, useState } from "react";
 import LoginForm from "@/pages/authComponents/loginForm";
 import { registerForEvent } from "@/services/eventMutations";
+import { useAuth } from "@/context/AuthContext";
 
 type RegisterModalProps = {
   eventId: string | null;
@@ -31,21 +32,21 @@ export default function RegisterModal({
     enabled: eventId !== null,
   });
 
-  const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
-  const user = checkUser();
+  // const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
+  const user = useAuth();
 
-  console.log(user);
+  console.log(user.user);
 
   // call the checkUser hook to see if the user is logged in
   // if the user isn't logged in, we will display a form to signin/signup
-  useEffect(() => {
-    if (user) {
-      setUserIsLoggedIn(true);
-    } else {
-      console.log("User is not logged in");
-      setUserIsLoggedIn(false);
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user) {
+  //     setUserIsLoggedIn(true);
+  //   } else {
+  //     console.log("User is not logged in");
+  //     setUserIsLoggedIn(false);
+  //   }
+  // }, [user]);
 
   const selectedEvent = useMemo<EventI | null>(() => {
     if (!eventData) {
@@ -62,8 +63,8 @@ export default function RegisterModal({
   const handleSubmit = (): void => {
     console.log("Registering for event");
     handleClose();
-    registerForEvent(eventId ?? "", user?.id ?? "").then(() => {
-      console.log(`Event ${eventId} registered for user ${user?.id}`);
+    registerForEvent(eventId ?? "", user.user?.id ?? "").then(() => {
+      console.log(`Event ${eventId} registered for user ${user.user?.id}`);
     });
   };
 
@@ -121,7 +122,7 @@ export default function RegisterModal({
         </div>
 
         {/* if the user is not logged in, we will prompt them to signup or login */}
-        {!userIsLoggedIn && (
+        {!user.user && (
           <div className="flex justify-center items-center py-12">
             <LoginForm initialMode="signup" />
           </div>
@@ -139,8 +140,8 @@ export default function RegisterModal({
           <button
             type="button"
             onClick={handleSubmit}
-            className={`rounded-xl px-4 py-2 text-sm text-white ${!userIsLoggedIn ? "bg-black/40 cursor-not-allowed" : "bg-primary hover:bg-primary/80 cursor-pointer"}`}
-            disabled={!userIsLoggedIn}
+            className={`rounded-xl px-4 py-2 text-sm text-white ${!user.user ? "bg-black/40 cursor-not-allowed" : "bg-primary hover:bg-primary/80 cursor-pointer"}`}
+            disabled={!user.user}
           >
             Register
           </button>
