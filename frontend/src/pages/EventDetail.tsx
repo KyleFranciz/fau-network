@@ -9,6 +9,8 @@ export default function EventDetailPage() {
   // get the param to use to get the event
   const { eventId } = useParams();
 
+  // example data to test out the attendees section
+
   // function get the getSpecificEvent from the backend
   const {
     data: event,
@@ -19,7 +21,12 @@ export default function EventDetailPage() {
     queryFn: () => getSpecificEvent(eventId),
   });
 
+  // query to get the host information for the this page
+
+  // query to get all the attendees for the events to display in list
+
   // handle when the image is loading
+
   if (isError) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -48,18 +55,27 @@ export default function EventDetailPage() {
       {/* TODO: add section to showcase the attendees to show all the people in attendance */}
       {/* TODO: make a modal to popup for when the user wants to join an event */}
       <div className="space-y-4">
-        <h2 className="text-4xl font-bold">
-          {event?.title ?? "Loading event..."}
-        </h2>
-        {event?.description ? (
-          <p className="text-lg text-muted-foreground">{event.description}</p>
-        ) : isLoading ? (
-          <div className="h-32 w-full animate-pulse rounded-2xl bg-muted" />
-        ) : (
-          <p className="text-muted-foreground">
-            Details for this event will be available soon.
-          </p>
-        )}
+        <div className="">
+          <h2 className="text-4xl font-bold">
+            {event?.title ?? "Loading event..."}
+          </h2>
+          {/* TODO: will change with data from when we get the host name that we get from the fetching function */}
+          {/*Title section*/}
+          <h3>{event?.host_id ? `Host: ${event?.host_id}` : "loading"}</h3>
+          {/* Description Section */}
+          <h3 className="text-[1.2rem]">{event?.location ?? "loading"}</h3>
+          {event?.description ? (
+            <p className="text-lg text-muted-foreground">{event.description}</p>
+          ) : isLoading ? (
+            <div className="h-32 w-full animate-pulse rounded-2xl bg-muted" />
+          ) : (
+            <p className="text-muted-foreground">
+              Details for this event will be available soon.
+            </p>
+          )}
+        </div>
+        <div></div>
+        {/* About Event Section */}
       </div>
     </div>
   );
