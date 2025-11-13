@@ -2,3 +2,9 @@
 export interface EventParams {
   eventId: string;
 }
+
+export interface EventRegisterParams {
+  eventId: string;
+  userId: string;
+  registeredDate: string;
+}

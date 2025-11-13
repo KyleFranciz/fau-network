@@ -44,7 +44,7 @@ export default function LoginForm({ initialMode = "login" }: LoginFormProps) {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center">
       <form
         onSubmit={handleSubmit}
         className="max-w-md mx-auto p-6 border rounded-sm space-y-4 bg-white/70"

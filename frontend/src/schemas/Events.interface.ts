@@ -37,3 +37,10 @@ export interface EventI {
   host_id: string | null;
   attendees_count: number | null; // note: backend typo preserved
 }
+
+// Event interface for registering for an event
+export interface EventRegisterI {
+  eventId: string;
+  userId: string;
+  registeredDate: string;
+}

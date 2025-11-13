@@ -21,8 +21,7 @@ export default function EventCard({
   onJoinClick,
 }: EventCardProps) {
   return (
-    <Link
-      to={`/events/${eventId}`}
+    <div
       className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer"
     >
       <div className="relative h-56 bg-muted rounded-3xl overflow-hidden">
@@ -34,7 +33,7 @@ export default function EventCard({
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 to-gray-700/40" />
         <button
           onClick={onJoinClick}
-          className="absolute bottom-3 right-3 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium px-4 py-2 rounded-3xl transition-colors duration-200"
+          className="absolute cursor-pointer bottom-3 right-3 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium px-4 py-2 rounded-3xl transition-colors duration-200"
           aria-label="Join event"
         >
           I'm Down
@@ -44,9 +43,11 @@ export default function EventCard({
         <p className="text-sm font-medium text-foreground">
           {date || "Date TBA"}
         </p>
-        <h3 className="text-xl font-semibold text-foreground leading-tight">
-          {title || "Event Title"}
-        </h3>
+        <Link to={`/events/${eventId}`}>
+          <h3 className="text-xl hover:underline font-semibold text-foreground leading-tight">
+            {title || "Event Title"}
+          </h3>
+        </Link>
         <p className="text-sm text-muted-foreground">
           Hosted: {host || "Unknown"}
         </p>
@@ -64,6 +65,6 @@ export default function EventCard({
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

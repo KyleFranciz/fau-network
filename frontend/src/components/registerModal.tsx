@@ -9,6 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import type { EventI } from "@/schemas/Events.interface";
 import { getEventById } from "@/services/eventFetchers";
+import checkUser from "@/hooks/checkUser";
+import { useEffect, useState } from "react";
+import LoginForm from '@/pages/authComponents/loginForm'
+import { registerForEvent } from "@/services/eventMutations";
 
 type RegisterModalProps = {
   eventId: string | null;
@@ -21,27 +25,48 @@ export default function RegisterModal({
   registerModalOpen,
   setRegisterModalOpen,
 }: RegisterModalProps) {
-
+  
+  // pass the evnet id to our query to get the event data
   const { data: eventData = [], isPending } = useQuery<EventI[]>({
     queryKey: ["event", eventId],
     queryFn: () => getEventById(eventId ?? ""),
     enabled: eventId !== null,
   });
 
-  console.log(eventData);
+  const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
+  const user = checkUser();
+
+  console.log(user)
+
+  // call the checkUser hook to see if the user is logged in
+  // if the user isn't logged in, we will display a form to signin/signup
+  useEffect(() => {
+
+    if (user) {
+      setUserIsLoggedIn(true);
+    } else {
+      console.log("User is not logged in");
+      setUserIsLoggedIn(false);
+    }
+
+  }, [user]);
 
   const selectedEvent = useMemo<EventI | null>(
     () => (eventData.length > 0 ? eventData[0] : null),
     [eventData]
   );
 
+  // function to close the modal, we are triggering the passed prop to close the modal
   const handleClose = (): void => {
     setRegisterModalOpen(false);
   };
 
-  const handleSubmit = (submitEvent: React.FormEvent<HTMLFormElement>): void => {
-    submitEvent.preventDefault();
+  const handleSubmit = (): void => {
+    console.log("Registering for event");
     handleClose();
+    registerForEvent(eventId ?? "", user?.id ?? "").then(() => {
+      console.log(`Event ${eventId} registered for user ${user?.id}`);
+    });
   };
 
   return (
@@ -65,44 +90,55 @@ export default function RegisterModal({
             </p>
           )}
           {selectedEvent && (
-            <p className="text-sm text-muted-foreground">
-              You are registering for{" "}
-              <span className="font-medium">{selectedEvent.title}</span>.
-            </p>
+            <>
+              <p className="text-sm text-muted-foreground">
+                You are registering for{" "}
+                <span className="font-medium text-black">{selectedEvent.title}</span>.
+              </p>
+
+              <img src={selectedEvent.image_url ?? ""} alt={selectedEvent.title ?? ""} className="w-full h-48 object-cover rounded-lg" />
+              <p className="text-sm text-muted-foreground">
+                {selectedEvent.description}
+              </p>
+
+              <p className="text-sm  text-black">
+                {selectedEvent.location}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {selectedEvent.date}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium">{selectedEvent.attendees_count}</span> attending
+              </p>
+            </>
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 grid gap-4">
-          <input
-            required
-            aria-label="Full name"
-            placeholder="Full name"
-            className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring"
-          />
-          <input
-            required
-            type="email"
-            aria-label="Email address"
-            placeholder="Email address"
-            className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring"
-          />
-
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="rounded-xl border border-border px-4 py-2 text-sm hover:bg-muted"
-            >
-              Close
-            </button>
-            <button
-              type="submit"
-              className="rounded-xl bg-primary px-4 py-2 text-sm text-white hover:bg-primary/80"
-            >
-              Register
-            </button>
+        {/* if the user is not logged in, we will prompt them to signup or login */}
+        {!userIsLoggedIn && (
+          <div className="flex justify-center items-center py-12">
+            <LoginForm initialMode="signup" />
           </div>
-        </form>
+        )}
+
+        {/* if the user is logged in, we will display a button to register for the event */}
+        <div className="flex justify-end items-end gap-2">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="rounded-xl cursor-pointer bg-muted px-4 py-2 text-sm text-foreground hover:bg-muted/80 border border-border"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className={`rounded-xl px-4 py-2 text-sm text-white ${!userIsLoggedIn ? 'bg-black/40 cursor-not-allowed' : 'bg-primary hover:bg-primary/80 cursor-pointer'}`}
+            disabled={!userIsLoggedIn}
+          >
+            Register
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );
