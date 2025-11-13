@@ -81,6 +81,6 @@ export const getSpecificEvent = async (
     throw new Error("The eventId is undefined");
   }
   // otherwise return the data
-  const response = await axios.get<EventI>(`${API_BASE_URL}/events/${eventId}`);
+  const response = await axios.get<EventI>(`${API_BASE_URL}/event/${eventId}`);
   return response.data;
 };

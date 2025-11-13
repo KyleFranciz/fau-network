@@ -52,18 +52,6 @@ app.get("/events", async (_request: Request, response: Response) => {
 
 // supabase route to fetch an event by id
 
-app.get("/event/:eventId", async (_request: Request, response: Response) => {
-  const { eventId } = _request.params;
-  const { data, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("id", eventId);
-  if (error) {
-    response.status(500).json({ error: error.message });
-  }
-  response.json(data);
-});
-
 // TODO: route to get all the popular events
 app.get("/events/popular", async (_request: Request, response: Response) => {
   try {
@@ -93,7 +81,7 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
 
 // route to fetch a specific event by id
 app.get(
-  "/events/:eventId",
+  "/event/:eventId",
   async (request: Request<EventParams>, response: Response) => {
     try {
       const { eventId } = request.params;
@@ -119,6 +107,7 @@ app.get(
     }
   },
 );
+
 // NOTE: gets the category from the request param to search supabase table
 app.get(
   "/events/category/:categoryId",
@@ -162,14 +151,12 @@ app.post(
   async (_request: Request<EventRegisterParams>, response: Response) => {
     try {
       const { eventId, userId, registeredDate } = _request.body;
-      const { data, error } = await supabase
-        .from("event_attendees")
-        .insert({
-          event_id: eventId,
-          user_id: userId,
-          status: "registered",
-          joined_at: registeredDate,
-        });
+      const { data, error } = await supabase.from("event_attendees").insert({
+        event_id: eventId,
+        user_id: userId,
+        status: "registered",
+        joined_at: registeredDate,
+      });
       if (error) {
         console.error("Supabase Error:", error.message);
         response.status(500).json({ error: error.message });

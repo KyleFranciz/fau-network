@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { EventI } from "@/schemas/Events.interface";
-import { getEventById } from "@/services/eventFetchers";
+import { getSpecificEvent } from "@/services/eventFetchers";
 import checkUser from "@/hooks/checkUser";
 import { useEffect, useState } from "react";
 import LoginForm from "@/pages/authComponents/loginForm";
@@ -25,9 +25,9 @@ export default function RegisterModal({
   setRegisterModalOpen,
 }: RegisterModalProps) {
   // pass the evnet id to our query to get the event data
-  const { data: eventData = [], isPending } = useQuery<EventI[]>({
+  const { data: eventData, isPending } = useQuery<EventI>({
     queryKey: ["event", eventId],
-    queryFn: () => getEventById(eventId ?? ""),
+    queryFn: () => getSpecificEvent(eventId ?? undefined),
     enabled: eventId !== null,
   });
 
@@ -47,10 +47,12 @@ export default function RegisterModal({
     }
   }, [user]);
 
-  const selectedEvent = useMemo<EventI | null>(
-    () => (eventData.length > 0 ? eventData[0] : null),
-    [eventData],
-  );
+  const selectedEvent = useMemo<EventI | null>(() => {
+    if (!eventData) {
+      return null;
+    }
+    return eventData;
+  }, [eventData]);
 
   // function to close the modal, we are triggering the passed prop to close the modal
   const handleClose = (): void => {
