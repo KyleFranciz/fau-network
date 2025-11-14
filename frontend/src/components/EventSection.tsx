@@ -31,9 +31,8 @@ export default function EventSection({
     queryFn: queryFn ?? getFeaturedEvents, // if there is no queryFn then use the getFeaturedEvents function
   });
 
-
   // function to handle when the event is clicked
-  // TODO: set up the functionality later on
+  // TODO: add in the event registration functionality that ryan made
   const handleJoinClick = (): void => {
     console.log("Join event clicked");
   };

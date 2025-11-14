@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 import { formatDateTime } from "./homeComponents/FeaturedEvents";
 
-// TODO: Make a default design to showcase the main image of the event
+// Page for the event details
 export default function EventDetailPage() {
   // get the param to use to get the event
   const { eventId } = useParams();
@@ -23,9 +23,11 @@ export default function EventDetailPage() {
     queryFn: () => getSpecificEvent(eventId),
   });
 
-  // query to get the host information for the this page
+  // funtion to get the host information for the this page
 
-  // query to get all the attendees for the events to display in list
+  // function to check if the user is registered for the event
+
+  // query to get all the attendees for the events to display in list might not add
 
   // handle when the image is loading
 
@@ -55,7 +57,7 @@ export default function EventDetailPage() {
 
       {/* TODO: add details section that shows info about the event that the organizer wants the user to know */}
       {/* TODO: add section to showcase the attendees to show all the people in attendance */}
-      {/* TODO: make a modal to popup for when the user wants to join an event */}
+      {/* TODO: Link the registration component to pop up with the register component*/}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-4">
           <div className="flex flex-col gap-3 ">
@@ -80,6 +82,7 @@ export default function EventDetailPage() {
                 {event?.date ? formatDateTime(event.date) : "date loading..."}
               </h3>
             </div>
+            {/* Description Section */}
             <h3 className="font-semibold">{event?.attendees_count ?? ""}</h3>
             {event?.description ? (
               <p className="text-lg text-muted-foreground">
@@ -93,11 +96,13 @@ export default function EventDetailPage() {
               </p>
             )}
           </div>
-          <div></div>
           {/* About Event Section event might be added*/}
+          <div></div>
         </div>
 
+        {/* NOTE: Make this show up if the user isnt registered for the event */}
         <EventRegistrationButton label="Register for this event" />
+        {/* TODO: Make an open chat section open up that takes the user to the chatpage if they are already registered */}
       </div>
     </div>
   );

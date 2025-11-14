@@ -3,3 +3,5 @@
 // function for getting the user profile info
 
 // function to get the host information to pass to the needed components
+
+// function to tell if the user is registered to an event

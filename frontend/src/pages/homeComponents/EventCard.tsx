@@ -21,9 +21,7 @@ export default function EventCard({
   onJoinClick,
 }: EventCardProps) {
   return (
-    <div
-      className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer"
-    >
+    <div className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer">
       <div className="relative h-56 bg-muted rounded-3xl overflow-hidden">
         <img
           src={image}
@@ -43,7 +41,7 @@ export default function EventCard({
         <p className="text-sm font-medium text-foreground">
           {date || "Date TBA"}
         </p>
-        <Link to={`/events/${eventId}`}>
+        <Link to={`/event/${eventId}`}>
           <h3 className="text-xl hover:underline font-semibold text-foreground leading-tight">
             {title || "Event Title"}
           </h3>

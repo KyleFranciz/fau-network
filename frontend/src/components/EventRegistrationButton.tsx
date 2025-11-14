@@ -3,6 +3,7 @@ interface EventRegistrationButtonProps {
   onRegister?: () => void;
 }
 
+// NOTE: Might change out some of the components with shadcn component if I have time
 export default function EventRegistrationButton({
   label = "Register",
   onRegister,
