@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
@@ -56,12 +57,12 @@ const DialogContent = React.forwardRef<
 });
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-const DialogHeader = (props: React.HTMLAttributes<HTMLDivElement>): JSX.Element => {
+const DialogHeader = (props: React.HTMLAttributes<HTMLDivElement>): ReactElement => {
   const { className, ...rest } = props;
   return <div className={cn("flex flex-col gap-1.5 text-center sm:text-left", className)} {...rest} />;
 };
 
-const DialogFooter = (props: React.HTMLAttributes<HTMLDivElement>): JSX.Element => {
+const DialogFooter = (props: React.HTMLAttributes<HTMLDivElement>): ReactElement => {
   const { className, ...rest } = props;
   return <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)} {...rest} />;
 };
