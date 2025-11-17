@@ -50,6 +50,7 @@ export default function EventCard({
           Hosted: {host || "Unknown"}
         </p>
         <div className="flex items-center gap-2 pt-2">
+          {/* NOTE: Avatar images for the card  */}
           <div className="flex items-center -space-x-2">
             {[...Array(3)].map((_, i) => (
               <div

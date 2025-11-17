@@ -13,7 +13,7 @@ export default function EventRegistrationButton({
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-7 shadow-sm">
       <p className="text-lg font-semibold text-foreground">
         Ready to join this event?
       </p>

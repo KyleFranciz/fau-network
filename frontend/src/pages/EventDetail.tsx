@@ -69,7 +69,7 @@ export default function EventDetailPage() {
             <h3 className="text-lg">
               <span>Host: </span>
               <span className=" font-bold">
-                {event?.host_id ? `Host: ${event.host_id}` : "Loading..."}
+                {event?.host_id ? `Host: ${event.host_id}` : "loading..."}
               </span>
             </h3>
             <div>
@@ -82,8 +82,9 @@ export default function EventDetailPage() {
                 {event?.date ? formatDateTime(event.date) : "date loading..."}
               </h3>
             </div>
-            {/* Description Section */}
+            {/* NOTE: Attendees Count (add in the logo show case next to the number of attendees) */}
             <h3 className="font-semibold">{event?.attendees_count ?? ""}</h3>
+            {/* Description Section */}
             {event?.description ? (
               <p className="text-lg text-muted-foreground">
                 {event.description}

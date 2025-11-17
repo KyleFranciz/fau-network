@@ -72,6 +72,7 @@ export default function EventSection({
           </div>
         )}
 
+        {/* TODO: add in a function at the top that gets the first three users avatar images from the backend and display them as the avatar icons for the event's */}
         {!isLoading && !isError && events.length > 0 && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (

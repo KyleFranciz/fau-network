@@ -15,7 +15,7 @@ import AuthCallbackPage from "./pages/AuthCallback";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
-// import EventChatPage from "./pages/EventChat";
+import EventChatPage from "./pages/EventChat";
 // TODO: use the useParam function to help with the routing to the eventId page to when elements are clicked on the route to different pages
 
 //NOTE: set up for the queryClient so that we can use useQuery to get data across the application
@@ -40,6 +40,7 @@ const router = createBrowserRouter([
         path: "event/:eventId", // this is for the individual event page
         element: <EventDetailPage />,
       },
+      { path: "event/:eventId/chat", element: <EventChatPage /> },
       {
         path: "login", // this is for the auth page (might combine the login and the signup page)
         element: <LoginPage />,
