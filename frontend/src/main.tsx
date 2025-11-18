@@ -56,6 +56,7 @@ const router = createBrowserRouter([
       },
       {
         path: "profile", // this is for the profile page to edit the account information
+        // TODO: take the user to login page if not signed in already
         element: <ProfilePage />,
       },
       {

@@ -16,8 +16,14 @@ const API_BASE_URL =
 export const registerForEvent = async (
   eventId: string | undefined,
   userId: string | undefined,
-): Promise<EventRegisterI | null> => {
+): Promise<EventRegisterI> => {
   try {
+    // check if there is any userId or eventId before trying
+    if (!userId || !eventId) {
+      toast.info("Please sign in to register");
+      throw Error("Missing user or eventId");
+    }
+
     // TODO: REMOVE BEFORE PROD!
     toast.info(`Registering for event ${eventId} for user ${userId}`);
 
@@ -34,10 +40,11 @@ export const registerForEvent = async (
     // notify of success
     toast.success("Successfully registerd for event");
 
-    return response.data as EventRegisterI | null;
+    return response.data as EventRegisterI; // made this way so use Mutation fails if the user isn't logged in
   } catch (error) {
     console.error("Error registering for event:", error);
     toast.error("There was an error registering for an event");
-    return null;
+    // throw error so that the fetch fails for the mutation used
+    throw error;
   }
 };

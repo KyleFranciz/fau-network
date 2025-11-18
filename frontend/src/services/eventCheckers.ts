@@ -18,7 +18,7 @@ export const getAttendanceStatus = async (
       .eq("user_id", userId)
       .single(); // return a single instance of the data that the user is registered for
 
-    // account for if the user is not registered for the event
+    // if the user is not registered for the event
     if (!data) {
       return null;
     }

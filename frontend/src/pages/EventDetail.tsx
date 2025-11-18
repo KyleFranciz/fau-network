@@ -12,6 +12,7 @@ import { getAttendanceStatus } from "@/services/eventCheckers";
 import ActionCalloutCard from "@/components/ActionCalloutCard";
 import ActionCalloutCardSkeleton from "@/components/ActionCalloutCardSkeleton";
 import { AlertCircle, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
 
 // Page for the event details
 export default function EventDetailPage() {
@@ -40,6 +41,11 @@ export default function EventDetailPage() {
       // navigate to the next page
       navigate(`/event/${eventId}/chat`);
     },
+    onError: (error) => {
+      if (error instanceof Error && error.message.includes("Missing user")) {
+        navigate("/signup");
+      }
+    },
   });
 
   // function get data for this event details page
@@ -60,11 +66,11 @@ export default function EventDetailPage() {
     data: attendeeData,
     isLoading: attendanceLoading,
     isError: attendanceError,
-    refetch: refetchAttendanceStatus,
+    refetch: refetchAttendanceStatus, // used to refetch the users attendance status manually
   } = useQuery({
     queryKey: ["attendee-status", userId, eventId],
     queryFn: () => getAttendanceStatus(userId, eventId),
-    enabled: Boolean(userId && eventId),
+    enabled: Boolean(userId && eventId), // only fires when a user is signed in and there is an eventId present
   });
 
   // loading state for checking registration
@@ -72,7 +78,7 @@ export default function EventDetailPage() {
     attendanceLoading && Boolean(userId && eventId);
 
   // check the status
-  const isRegistered = attendeeData?.status === "registered";
+  const isRegistered = attendeeData?.status === "registered"; // stores the bool value to be use in component render
 
   // query to get all the attendees for the events to display in list might not add
 

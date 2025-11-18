@@ -4,7 +4,7 @@ import { getSpecificEvent } from "@/services/eventFetchers";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
-// TODO:
+// TODO: CHECK FOR IF THE USER THAT IS ON THE PAGE HAS THE SAME USER ID AS LISTED FOR THE ATTENDEES IN THE CHAT (route to the sign up if prompted)
 
 // this is for the event chat room once the user is attending the event
 export default function EventChatPage() {

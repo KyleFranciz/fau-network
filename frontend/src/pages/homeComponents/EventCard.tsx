@@ -23,6 +23,7 @@ export default function EventCard({
   return (
     <div className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer">
       <div className="relative h-56 bg-muted rounded-3xl overflow-hidden">
+        {/* TODO: make the image link to the event page as well */}
         <img
           src={image}
           alt={title || "Event image"}
