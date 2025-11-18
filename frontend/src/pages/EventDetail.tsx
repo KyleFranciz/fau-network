@@ -2,34 +2,79 @@ import EventImage from "@/components/EventImage";
 import EventImageSkeleton from "@/components/EventImageSkeleton";
 import EventRegistrationButton from "@/components/EventRegistrationButton";
 import { getSpecificEvent } from "@/services/eventFetchers";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router";
 import { formatDateTime } from "./homeComponents/FeaturedEvents";
+import { useAuth } from "@/context/AuthContext";
+import { registerForEvent } from "@/services/eventMutations";
+import { queryClient } from "@/lib/queryClient";
+import { getAttendanceStatus } from "@/services/eventCheckers";
+import ActionCalloutCard from "@/components/ActionCalloutCard";
+import ActionCalloutCardSkeleton from "@/components/ActionCalloutCardSkeleton";
+import { AlertCircle, MessageSquare } from "lucide-react";
 
 // Page for the event details
 export default function EventDetailPage() {
   // get the param to use to get the event
   const { eventId } = useParams();
 
-  // example data to test out the attendees section
+  // state to check keep track of the attendance status
+  // const [userAttendance, setUserAttendace] = useState(false);
 
-  // function get the getSpecificEvent from the backend
+  // useNavigate to move user to the chatpage
+  const navigate = useNavigate();
+
+  // check for the users current login status and get the user obj
+  const { user } = useAuth(); // used to pass in the userId
+  const userId = user?.id;
+
+  // useMutation function to update the attendee and the event information upon registration
+  const makeRegistration = useMutation({
+    mutationKey: ["event-registration", eventId], // update the event info upon registration
+    mutationFn: () => registerForEvent(eventId, user?.id),
+    // route the user to the chatpage upon registration
+    onSuccess: () => {
+      // invalidate the query so that the event_id has to refresh
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+
+      // navigate to the next page
+      navigate(`/event/${eventId}/chat`);
+    },
+  });
+
+  // function get data for this event details page
   const {
     data: event,
     isLoading,
     isError,
   } = useQuery({
     queryKey: ["event", eventId],
+    // fires again after the query is invalidated
     queryFn: () => getSpecificEvent(eventId),
   });
 
-  // funtion to get the host information for the this page
+  // TODO: make a funtion to get the host information for the this page
 
-  // function to check if the user is registered for the event
+  // function to get users attendee status
+  const {
+    data: attendeeData,
+    isLoading: attendanceLoading,
+    isError: attendanceError,
+    refetch: refetchAttendanceStatus,
+  } = useQuery({
+    queryKey: ["attendee-status", userId, eventId],
+    queryFn: () => getAttendanceStatus(userId, eventId),
+    enabled: Boolean(userId && eventId),
+  });
+
+  // loading state for checking registration
+  const isCheckingRegistration =
+    attendanceLoading && Boolean(userId && eventId);
+
+  // check the status
+  const isRegistered = attendeeData?.status === "registered";
 
   // query to get all the attendees for the events to display in list might not add
-
-  // handle when the image is loading
 
   if (isError) {
     return (
@@ -102,7 +147,30 @@ export default function EventDetailPage() {
         </div>
 
         {/* NOTE: Make this show up if the user isnt registered for the event */}
-        <EventRegistrationButton label="Register for this event" />
+        {isCheckingRegistration ? (
+          <ActionCalloutCardSkeleton />
+        ) : attendanceError ? (
+          <ActionCalloutCard
+            title="Unable to confirm registration"
+            description="We ran into an issue checking your registration status. Please try again."
+            buttonLabel="Retry check"
+            icon={AlertCircle}
+            onAction={() => refetchAttendanceStatus()}
+          />
+        ) : isRegistered ? (
+          <ActionCalloutCard
+            title="You Are Registered"
+            description="Go ahead and check out the chat with all the other attendees"
+            buttonLabel="Chat With Attendees"
+            icon={MessageSquare}
+            onAction={() => navigate(`/event/${eventId}/chat`)}
+          />
+        ) : (
+          <EventRegistrationButton
+            label="Register for this event"
+            onRegister={() => makeRegistration.mutate()}
+          />
+        )}
         {/* TODO: Make an open chat section open up that takes the user to the chatpage if they are already registered */}
       </div>
     </div>

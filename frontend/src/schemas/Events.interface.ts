@@ -44,3 +44,11 @@ export interface EventRegisterI {
   userId: string;
   registeredDate: string;
 }
+
+export interface EventAttendeeStatusI {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: string;
+  joined_at: Date;
+}

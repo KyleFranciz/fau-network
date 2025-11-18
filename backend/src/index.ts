@@ -8,6 +8,7 @@ import cors from "cors";
 // import { request } from "http";
 import { CategoryParams } from "./schema/category.schema";
 import { EventParams, EventRegisterParams } from "./schema/events.schema";
+import { EventMessage, EventMessageBody } from "./schema/messages.schema";
 
 // env variables that are needed to run the server
 dotenv.config();
@@ -148,9 +149,11 @@ app.get(
 // route to register for an event
 app.post(
   "/events/register/:eventId",
-  async (_request: Request<EventRegisterParams>, response: Response) => {
+  async (request: Request<EventRegisterParams>, response: Response) => {
     try {
-      const { eventId, userId, registeredDate } = _request.body;
+      const { eventId, userId, registeredDate } = request.body;
+
+      // NOTE: data isn't being returned (noting for lsp reasons, might just remove as a variable)
       const { data, error } = await supabase.from("event_attendees").insert({
         event_id: eventId,
         user_id: userId,
@@ -180,7 +183,7 @@ app.post(
       // Update the attendees_count
       const { data: updatedEvent, error: updateError } = await supabase
         .from("events")
-        .update({ attendees_count: (currentEvent?.attendees_count || 0) + 1 })
+        .update({ attendees_count: (currentEvent?.attendees_count || 0) + 1 }) // sets to zero if no attendees_count and add 1
         .eq("id", eventId);
 
       if (updateError) {
@@ -189,10 +192,86 @@ app.post(
         return;
       }
 
+      // NOTE: Returns the updated events data to the frontend
       response.json(updatedEvent);
     } catch (err) {
       console.error("Server Error", err);
       response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// function to get the chat messages from the backend
+app.get(
+  "event/:eventId/chat",
+  async (request: Request<{ eventId: string }>, response: Response) => {
+    try {
+      // use the event id from the param
+      const { eventId } = request.params;
+
+      // get the event message from supabase
+      const { data, error } = await supabase
+        .from("event_messages")
+        .select("*")
+        .eq("event_id", eventId)
+        .order("created_at", { ascending: true });
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+      response.status(200).json({ messages: data as EventMessage[] });
+    } catch (err) {
+      console.error("Server Error", err);
+      response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to send messages to the database
+app.post(
+  "/event/:eventId/chat",
+  async (
+    request: Request<{ eventId: string }, EventMessageBody>,
+    response: Response,
+  ) => {
+    // assign the variables and do all the checking
+
+    // get the event id from the request param
+    const event_id = request.params;
+
+    // get the message from the request body
+    const { message, user_id } = request.body;
+
+    // check if there is a message or user_id
+    if (!message || !user_id) {
+      response.status(400).json({ error: "Message or user_id is missing" });
+      return;
+    }
+
+    try {
+      //add the message to the event messages
+      const { data, error } = await supabase
+        .from("event_messages")
+        .insert([
+          {
+            event_id: event_id,
+            user_id: user_id,
+            message: message, // messages sent to the backend
+          },
+        ])
+        .select()
+        .single();
+
+      // check for an error
+      if (error) {
+        throw error;
+      }
+      // format and return the data
+      response.status(200).json({ message: data as EventMessage });
+    } catch (err) {
+      console.error("Server Error", err);
+      response.status(500).json({ error: "Internal Server Error" });
+      return;
     }
   },
 );

@@ -8,3 +8,9 @@ export interface EventMessagesI {
   message: string; // message that the user is sending
   created_at: Date; // data and time that the message was created at
 }
+
+// interface for sending event messages to the backend
+export interface SendEventMessageI {
+  user_id: string;
+  message: string;
+}
