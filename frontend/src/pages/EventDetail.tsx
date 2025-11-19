@@ -12,7 +12,7 @@ import { getAttendanceStatus } from "@/services/eventCheckers";
 import ActionCalloutCard from "@/components/ActionCalloutCard";
 import ActionCalloutCardSkeleton from "@/components/ActionCalloutCardSkeleton";
 import { AlertCircle, MessageSquare } from "lucide-react";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 
 // Page for the event details
 export default function EventDetailPage() {
