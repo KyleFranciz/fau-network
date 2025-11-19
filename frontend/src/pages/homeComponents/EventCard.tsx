@@ -23,13 +23,18 @@ export default function EventCard({
   return (
     <div className="rounded-2xl bg-card overflow-hidden hover:cursor-pointer">
       <div className="relative h-56 bg-muted rounded-3xl overflow-hidden">
-        {/* TODO: make the image link to the event page as well */}
-        <img
-          src={image}
-          alt={title || "Event image"}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 to-gray-700/40" />
+        <Link
+          to={`/event/${eventId}`}
+          className="block h-full"
+          aria-label={`View event ${title || "Event"}`}
+        >
+          <img
+            src={image}
+            alt={title || "Event image"}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 to-gray-700/40" />
+        </Link>
         <button
           onClick={onJoinClick}
           className="absolute cursor-pointer bottom-3 right-3 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium px-4 py-2 rounded-3xl transition-colors duration-200"

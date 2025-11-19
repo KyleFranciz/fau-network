@@ -1,7 +1,13 @@
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { ProfileHeaderCard } from "./profileComponents/ProfileHeaderCard";
 import { ProfileNavigationTabs } from "./profileComponents/ProfileNavigationTabs";
-import type { AttendedEvent, CreatedEventStat } from "./profileComponents/profile.types";
+import type {
+  AttendedEvent,
+  CreatedEventStat,
+} from "./profileComponents/profile.types";
+
+//TODO: Fix the typing of the component and fix errors in the schema to fix the errors in the lsp
+// TODO: Get the users events and display them in the event section of the component
 
 const attendedEvents: readonly AttendedEvent[] = [
   {
@@ -26,7 +32,8 @@ const attendedEvents: readonly AttendedEvent[] = [
     date: "Mar 18, 2025 · 6:00 PM",
     location: "Innovation Hub",
     status: "waitlisted",
-    description: "Friendly roast where founders pitch to mentors for honest feedback.",
+    description:
+      "Friendly roast where founders pitch to mentors for honest feedback.",
   },
 ];
 
@@ -37,7 +44,8 @@ const createdEvents: readonly CreatedEventStat[] = [
     date: "Apr 22, 2025 · 6:00 PM",
     location: "Innovation Hub",
     status: "live",
-    description: "Weekly meetup where students prototype solutions for campus challenges.",
+    description:
+      "Weekly meetup where students prototype solutions for campus challenges.",
     attendeesCount: 74,
   },
   {
@@ -46,7 +54,8 @@ const createdEvents: readonly CreatedEventStat[] = [
     date: "May 04, 2025 · 9:00 AM",
     location: "Engineering East",
     status: "published",
-    description: "Day-long sprint focused on designing climate-resilient campus ideas.",
+    description:
+      "Day-long sprint focused on designing climate-resilient campus ideas.",
     attendeesCount: 39,
   },
   {
@@ -55,7 +64,8 @@ const createdEvents: readonly CreatedEventStat[] = [
     date: "Jun 10, 2025 · 5:00 PM",
     location: "Tech Hall, FAU",
     status: "draft",
-    description: "Curated roundtable for women in tech to share stories and strategies.",
+    description:
+      "Curated roundtable for women in tech to share stories and strategies.",
     attendeesCount: 0,
   },
 ];
@@ -80,7 +90,10 @@ const ProfilePage = (): JSX.Element => {
           attendedEvents={42}
           username="taylorbrooks"
         />
-        <ProfileNavigationTabs attendedEvents={attendedEvents} createdEvents={createdEvents} />
+        <ProfileNavigationTabs
+          attendedEvents={attendedEvents}
+          createdEvents={createdEvents}
+        />
       </div>
     </section>
   );
