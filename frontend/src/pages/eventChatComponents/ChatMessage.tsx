@@ -1,14 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-
-export interface ChatMessageData {
-  id: string;
-  senderName: string;
-  content: string;
-  timestamp: string;
-  avatarUrl?: string;
-  isCurrentUser?: boolean;
-}
+import type { ChatMessageData } from "@/schemas/chats.interface";
 
 interface ChatMessageProps {
   message: ChatMessageData;

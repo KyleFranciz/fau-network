@@ -8,7 +8,11 @@ import cors from "cors";
 // import { request } from "http";
 import { CategoryParams } from "./schema/category.schema";
 import { EventParams, EventRegisterParams } from "./schema/events.schema";
-import { EventMessage, EventMessageBody } from "./schema/messages.schema";
+import {
+  EventMessage,
+  EventMessageBody,
+  EventMessageWithUser,
+} from "./schema/messages.schema";
 
 // env variables that are needed to run the server
 dotenv.config();
@@ -203,23 +207,37 @@ app.post(
 
 // function to get the chat messages from the backend
 app.get(
-  "event/:eventId/chat",
+  "/event/:eventId/chat",
   async (request: Request<{ eventId: string }>, response: Response) => {
     try {
       // use the event id from the param
       const { eventId } = request.params;
 
-      // get the event message from supabase
-      const { data, error } = await supabase
+      // get the event message from supabase to package later in this function
+      const { data: messageData, error: messageError } = await supabase
         .from("event_messages")
-        .select("*")
+        .select(
+          `id, event_id, user_id, message, created_at, users:user_id( full_name, profile_image)`,
+        )
         .eq("event_id", eventId)
         .order("created_at", { ascending: true });
-      if (error) {
-        console.error("Supabase Error:", error.message);
-        return response.status(500).json({ error: error.message });
+
+      // if there is are no messages in the chat
+      // if (messageData?.length === 0) {
+      //   return response
+      //     .status(404)
+      //     .json({ error: "There is are no messages in this event" });
+      // }
+
+      if (messageError) {
+        console.error("Supabase Error:", messageError.message);
+        return response.status(500).json({ error: messageError.message });
       }
-      response.status(200).json({ messages: data as EventMessage[] });
+
+      // handle if the message data is available or not
+      response
+        .status(200)
+        .json({ messages: (messageData ?? []) as EventMessageWithUser[] });
     } catch (err) {
       console.error("Server Error", err);
       response.status(500).json({ error: "Internal Server Error" });
@@ -234,40 +252,42 @@ app.post(
     request: Request<{ eventId: string }, EventMessageBody>,
     response: Response,
   ) => {
-    // assign the variables and do all the checking
-
-    // get the event id from the request param
-    const event_id = request.params;
-
-    // get the message from the request body
-    const { message, user_id } = request.body;
-
-    // check if there is a message or user_id
-    if (!message || !user_id) {
-      response.status(400).json({ error: "Message or user_id is missing" });
-      return;
-    }
-
     try {
+      // assign the variables and do all the checking
+
+      // get the event id from the request param (might have to tweak later)
+      const { eventId } = request.params;
+
+      // get the message and the user_id from the request body
+      const { message, user_id } = request.body;
+
+      // check if there is a message or user_id
+      if (!message || !user_id) {
+        response.status(400).json({ error: "Message or user_id is missing" });
+        return;
+      }
+
       //add the message to the event messages
       const { data, error } = await supabase
         .from("event_messages")
         .insert([
           {
-            event_id: event_id,
+            event_id: eventId,
             user_id: user_id,
             message: message, // messages sent to the backend
           },
         ])
-        .select()
+        .select(
+          `id, event_id, user_id, message, created_at, users:user_id ( full_name, profile_image)`,
+        )
         .single();
 
       // check for an error
       if (error) {
         throw error;
       }
-      // format and return the data
-      response.status(200).json({ message: data as EventMessage });
+      // return the one message that the user just sent
+      response.status(200).json({ message: data as EventMessageWithUser }); // returns the single message with all the info about the user that just sent the message
     } catch (err) {
       console.error("Server Error", err);
       response.status(500).json({ error: "Internal Server Error" });
