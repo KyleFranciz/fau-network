@@ -20,6 +20,7 @@ export function ChatMessage({ message, formattedTimestamp }: ChatMessageProps) {
       {/* Avatar Styling */}
       <Avatar className="h-10 w-10 rounded-3xl border border-border">
         <AvatarImage src={message.avatarUrl} alt={message.senderName} />
+        {/* Fallback if the user doesn't have a set avatar */}
         <AvatarFallback>
           {message.senderName
             .split(" ")

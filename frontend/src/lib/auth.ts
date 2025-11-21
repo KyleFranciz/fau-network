@@ -1,5 +1,5 @@
 import { supabase } from "./supabaseClient";
-import checkUser from "@/hooks/checkUser";
+// import checkUser from "@/hooks/checkUser";
 
 // auth functions or supabase
 // TODO: add username param to also send the username to the profile page for when the user is logged in
@@ -23,6 +23,7 @@ export async function signUp(
     );
   }
 
+  // might change this so that the username might will be added to the metadata so that it can be used later on
   const { data, error } = await supabase.auth.signUp({
     email,
     password,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -31,19 +31,21 @@ import { getChatMessages } from "@/services/chatFetchers";
 import { mapMessagesToChatData } from "@/services/chat.mapper";
 import { useAuth } from "@/context/AuthContext";
 import { sendChatMessage } from "@/services/chatMutation";
+import { supabase } from "@/lib/supabaseClient";
+import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 
 // TODO: CHECK FOR IF THE USER THAT IS ON THE PAGE HAS THE SAME USER ID AS LISTED FOR THE ATTENDEES IN THE CHAT (route to the sign up if prompted)
 // TODO: Make the username of the message sender in bold
 // this is for the event chat room once the user is attending the event
 export default function EventChatPage() {
   // useParams to get the event info from the backend
-  const { eventId } = useParams();
+  const { eventId } = useParams<{ eventId: string }>();
 
   // get the current user
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // query to get the event info to display to the user on this page
+  // NOTE: Query to get the event info to display to the user on this page
   const {
     data: event,
     isLoading,
@@ -54,20 +56,22 @@ export default function EventChatPage() {
     enabled: Boolean(eventId),
   });
 
-  // make a query to get the messages from the backend ( plug in function to get messaging data from the backend)
+  // NOTE: Query to get all the chat messages from the backend chat route so it can be put through a mapper
   const {
-    data: chatMessages = [],
+    data: chatMessages = [], // chatMessage = to an array
     isLoading: isChatLoading,
     error: chatError,
+    // get the data that the query receives from the backend, along with the error and then returns the mapper data in the ChatMessageData type
   } = useQuery<EventMessagesWithUserInfo[], Error, ChatMessageData[]>({
     queryKey: ["event-messages", eventId],
+    // enable the query if the eventId is present
     enabled: Boolean(eventId),
-    queryFn: () => getChatMessages(eventId),
-    // map the transport shape to the UI-friendly structure
+    queryFn: () => getChatMessages(eventId), // function to get the chat messages
+    // NOTE: used a map function to map and transform the data shape into the UI-friendly structure so that it can send to the frontend
     select: (messages) => mapMessagesToChatData(messages, user?.id),
   });
 
-  // NOTE: dummy messages gonna connect to the backend at a later date so that the flow works for the messaging
+  // NOTE: dummy data to show in the UI component so that the UI looks like it has messages (will remove later on)
   const [messages] = useState<ChatMessageData[]>([
     {
       id: "msg-1",
@@ -99,17 +103,29 @@ export default function EventChatPage() {
       isCurrentUser: true,
     },
   ]);
+
+  // useEffect to clear the message when the real data load (might remove and refractor later on)
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      setOptimisticMessages([]);
+    }
+  }, [messages]);
+
+  // state that stores the data of the messages in the new transformed state to be mapped through
   const [optimisticMessages, setOptimisticMessages] = useState<
     ChatMessageData[]
   >([]);
 
+  // NOTE: Mutation to send the messages to the backend
   const sendMessageMutation = useMutation<
-    unknown,
-    Error,
-    string,
-    { optimisticId: string }
+    unknown, // payload from the mutation that we get back is known, I will fix the typing later on to make sure that it proper
+    Error, // mutation also catches the errors that may pop up
+    string, // the type in the mutation that we send is a string the (text)
+    { optimisticId: string } // this is to help opperate on specific messages later on if needed
   >({
+    // function gets the message from the input
     mutationFn: async (text: string) => {
+      // checks to make sure that the required fields are met otherwise throw an error
       if (!eventId) {
         throw new Error("Event ID missing. Please try again.");
       }
@@ -117,17 +133,25 @@ export default function EventChatPage() {
         throw new Error("You need to be logged in to send messages.");
       }
 
+      // send the message otherwise
       return sendChatMessage(eventId, {
         message: text,
         user_id: user.id,
       });
     },
+    // when theres a mutation when the message is attempted to be sent
     onMutate: async (text: string) => {
-      const optimisticId = `temp-${Date.now()}`;
+      // onMutate returns the optimisticId to the other parts that need it
+      const optimisticId = `temp-${Date.now()}`; // used to get the specific data later on
+
+      // update the users user_metadata so that the full_name and the avatar_url is stored inisde of it
       const userMetadata = user?.user_metadata as
         | { full_name?: string; avatar_url?: string }
         | undefined;
+
+      // message that will show on the frontend when the initial message is sending to the backend
       const optimisticMessage: ChatMessageData = {
+        // use the ChatMessageData structure to structure the message that shows on the frontend
         id: optimisticId,
         senderName: userMetadata?.full_name ?? user?.email ?? "You",
         content: text,
@@ -136,32 +160,40 @@ export default function EventChatPage() {
         avatarUrl: userMetadata?.avatar_url ?? undefined,
       };
 
+      // add and update the messages to the array of the other messages
       setOptimisticMessages((prev) => [...prev, optimisticMessage]);
 
+      // return the id to access the specific message
       return { optimisticId };
     },
+
+    // incase things go wrong
     onError: (_error, _text, context) => {
+      // NOTE: The optimisticId is from the useMutation optimisticId that can be accessed anywhere in the function
+      // upon an error then
       if (context?.optimisticId) {
+        // in the optimisticMessage filter out the message so that it doesn't stay on the UI
         setOptimisticMessages((prev) =>
           prev.filter((message) => message.id !== context.optimisticId),
         );
       }
     },
-    onSettled: (_data, _error, _text, context) => {
+    onSettled: async (_data, _error, _text, context) => {
+      // start the invalidation so that the query can in the mean time
+      await queryClient.invalidateQueries({
+        queryKey: ["event-messages", eventId],
+      });
+
+      // remove the replacement message after the query refetches and updates with the new dat from the backend
       if (context?.optimisticId) {
         setOptimisticMessages((prev) =>
           prev.filter((message) => message.id !== context.optimisticId),
         );
       }
-
-      queryClient.invalidateQueries({
-        queryKey: ["event-messages", eventId],
-      });
     },
   });
 
-  // make a mutation to handle sending the message to the backend
-  // make funciton in chat fetchers file help with sending the message to the route
+  // mutate function to handle sending the messages to backend
   const handleSendMessage = (text: string): void => {
     if (!text.trim()) return;
     if (!eventId) {
@@ -172,10 +204,9 @@ export default function EventChatPage() {
       console.error("User must be logged in to send messages");
       return;
     }
+    // call the mutation function and pass in the text to send
     sendMessageMutation.mutate(text);
   };
-
-  // query to get the chat messages from the backend
 
   // check if there is an error getting the data
   if (error) {
@@ -191,22 +222,73 @@ export default function EventChatPage() {
     event?.date ?? event?.created_at,
     event?.time,
   );
+
+  // show the attendanceCount if not then show 18
   const attendanceCount = event?.attendees_count ?? 18;
+
+  // tittle for the event
   const headerTitle = isLoading
     ? "Loading event..."
     : event?.title
       ? event.title
       : "Event failed to load";
+
+  // image for the event
   const eventImage = event?.image_url;
+
+  // help with the loading state an showing the description of the event
   const descriptionCopy = isLoading
     ? "Loading chat details..."
     : (event?.description ?? "Chat is open for all attendees.");
   // leverage the backend results when ready, otherwise fall back to temp seed data
+
+  // show the default messages till there are messages to show on the frontend
   const baseMessages = chatMessages.length > 0 ? chatMessages : messages;
+
+  // holds the messages to display in the message box
   const displayedMessages =
     optimisticMessages.length > 0
       ? [...baseMessages, ...optimisticMessages]
       : baseMessages;
+
+  // add in a subscription to the messaging get alerts and refresh when there are new messages
+  useEffect(() => {
+    if (!eventId) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(`event-${eventId}-messages`)
+      .on<EventMessagesWithUserInfo>(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "event_messages",
+          filter: `event_id=eq.${eventId}`,
+        },
+        (payload: RealtimePostgresInsertPayload<EventMessagesWithUserInfo>) => {
+          // messages that we get back from the payload (database table)
+          const eventMessage = payload.new;
+
+          // dont update for the users own messages already (handled by the optimisticMessage)
+          if (eventMessage.user_id == user?.id) {
+            return;
+          }
+
+          // invalidate and refetch the data from the backend
+          queryClient.invalidateQueries({
+            queryKey: ["event_messages", eventId],
+          });
+        },
+      )
+      .subscribe();
+
+    // clean up after update (remove the channel after)
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [eventId, user?.id, queryClient]);
 
   return (
     <section className="container mx-auto px-4 py-6">
