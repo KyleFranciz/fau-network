@@ -6,7 +6,10 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
 import { formatDateTime } from "./homeComponents/FeaturedEvents";
 import { useAuth } from "@/context/AuthContext";
-import { registerForEvent } from "@/services/eventMutations";
+import {
+  registerForEvent,
+  unregisterForEvent,
+} from "@/services/eventMutations";
 import { queryClient } from "@/lib/queryClient";
 import { getAttendanceStatus } from "@/services/eventCheckers";
 import ActionCalloutCard from "@/components/ActionCalloutCard";
@@ -29,25 +32,6 @@ export default function EventDetailPage() {
   const { user } = useAuth(); // used to pass in the userId
   const userId = user?.id;
 
-  // useMutation function to update the attendee and the event information upon registration
-  const makeRegistration = useMutation({
-    mutationKey: ["event-registration", eventId], // update the event info upon registration
-    mutationFn: () => registerForEvent(eventId, user?.id),
-    // route the user to the chatpage upon registration
-    onSuccess: () => {
-      // invalidate the query so that the event_id has to refresh
-      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
-
-      // navigate to the next page
-      navigate(`/event/${eventId}/chat`);
-    },
-    onError: (error) => {
-      if (error instanceof Error && error.message.includes("Missing user")) {
-        navigate("/signup");
-      }
-    },
-  });
-
   // function get data for this event details page
   const {
     data: event,
@@ -61,6 +45,8 @@ export default function EventDetailPage() {
 
   // TODO: make a funtion to get the host information for the this page
 
+  const shouldCheckRegistration = Boolean(userId && eventId);
+
   // function to get users attendee status
   const {
     data: attendeeData,
@@ -70,18 +56,56 @@ export default function EventDetailPage() {
   } = useQuery({
     queryKey: ["attendee-status", userId, eventId],
     queryFn: () => getAttendanceStatus(userId, eventId),
-    enabled: Boolean(userId && eventId), // only fires when a user is signed in and there is an eventId present
+    enabled: shouldCheckRegistration, // only fires when a user is signed in and there is an eventId present
   });
 
   // loading state for checking registration
-  const isCheckingRegistration =
-    attendanceLoading && Boolean(userId && eventId);
+  const isCheckingRegistration = attendanceLoading && shouldCheckRegistration;
 
   // check the status
   const isRegistered = attendeeData?.status === "registered"; // stores the bool value to be use in component render
 
-  // query to get all the attendees for the events to display in list might not add
+  // useMutation function to update the attendee and the event information upon registration
+  const registerMutation = useMutation({
+    mutationKey: ["event-registration", eventId], // update the event info upon registration
+    mutationFn: () => registerForEvent(eventId, user?.id),
+    // route the user to the chatpage upon registration
+    onSuccess: () => {
+      // invalidate the query so that the event_id has to refresh
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      refetchAttendanceStatus();
 
+      // navigate to the next page
+      navigate(`/event/${eventId}/chat`);
+    },
+    onError: (error) => {
+      if (error instanceof Error && error.message.includes("Missing user")) {
+        navigate("/signup");
+      }
+    },
+  });
+
+  // mutation to handle the user unregistering for the event
+  const unregisterMutation = useMutation({
+    mutationKey: ["event-unregister", eventId],
+    mutationFn: () => unregisterForEvent(user?.id, eventId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      refetchAttendanceStatus();
+    },
+  });
+
+  // handle the pending state of the users registration
+  const isMutatingRegistration =
+    registerMutation.isPending || unregisterMutation.isPending;
+
+  // handles showing the status of the users registration in the event image when the user registers or unregisters
+  const canShowHeroRegistrationAction =
+    shouldCheckRegistration && !attendanceError;
+
+  // NOTE: query to get all the attendees for the events to display in list might not add
+
+  // handle if theres an error getting the event details
   if (isError) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -103,7 +127,24 @@ export default function EventDetailPage() {
       {isLoading ? (
         <EventImageSkeleton />
       ) : (
-        <EventImage imageUrl={event?.image_url} title={event?.title} />
+        // shows the event image and the status of the user
+        <EventImage
+          imageUrl={event?.image_url}
+          title={event?.title}
+          isRegistered={isRegistered}
+          isCheckingStatus={isCheckingRegistration}
+          isActionDisabled={isMutatingRegistration}
+          onRegister={
+            canShowHeroRegistrationAction
+              ? () => registerMutation.mutate()
+              : undefined
+          }
+          onUnregister={
+            canShowHeroRegistrationAction
+              ? () => unregisterMutation.mutate()
+              : undefined
+          }
+        />
       )}
 
       {/* TODO: add details section that shows info about the event that the organizer wants the user to know */}
@@ -165,7 +206,7 @@ export default function EventDetailPage() {
           />
         ) : isRegistered ? (
           <ActionCalloutCard
-            title="You Are Registered"
+            title="You're Already Registered"
             description="Go ahead and check out the chat with all the other attendees"
             buttonLabel="Chat With Attendees"
             icon={MessageSquare}
@@ -174,7 +215,7 @@ export default function EventDetailPage() {
         ) : (
           <EventRegistrationButton
             label="Register for this event"
-            onRegister={() => makeRegistration.mutate()}
+            onRegister={() => registerMutation.mutate()}
           />
         )}
         {/* TODO: Make an open chat section open up that takes the user to the chatpage if they are already registered */}

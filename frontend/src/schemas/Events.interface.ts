@@ -42,7 +42,7 @@ export interface EventI {
 export interface EventRegisterI {
   eventId: string;
   userId: string;
-  registeredDate: string;
+  registeredDate?: string;
 }
 
 export interface EventAttendeeStatusI {

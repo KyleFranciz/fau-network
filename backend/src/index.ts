@@ -253,6 +253,41 @@ app.post(
   },
 );
 
+// route to unregister from an event
+app.delete(
+  "/event/register/:eventId",
+  async (request: Request<EventRegisterParams>, response: Response) => {
+    try {
+      // get the params from the request
+      const { eventId, userId } = request.body; // might not need to use the registeredDate to remove the user
+
+      // remove the user from the attendees table for the event (might not need to return the data)
+      const { data, error } = await supabase
+        .from("event_attendees")
+        .delete()
+        .eq("event_id", eventId)
+        .eq("user_id", userId);
+
+      // check if there was an error removing the user from the table
+      if (error) {
+        return response.json({
+          error: `There was an error deleting the user: ${error}`,
+        });
+      }
+
+      // otherwise
+      return response.json({
+        message: `This user got deleted from the database: ${data}`,
+      });
+    } catch (error) {
+      // catch if there is an error with deleting the user from the database
+      response.json({
+        error: `There was an error deleting the user: ${error}`,
+      });
+    }
+  },
+);
+
 // function to get the chat messages from the backend
 app.get(
   "/event/:eventId/chat",

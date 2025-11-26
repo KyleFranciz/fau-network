@@ -18,10 +18,11 @@ import {
   CalendarClock,
   Info,
 } from "lucide-react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { formatDateTime } from "./homeComponents/FeaturedEvents";
 import { ChatMessage } from "./eventChatComponents/ChatMessage";
 import { ChatComposer } from "./eventChatComponents/ChatComposer";
+import { ChatBubbleLoader } from "./eventChatComponents/ChatBubbleLoader";
 import type {
   ChatMessageData,
   EventMessagesWithUserInfo,
@@ -33,6 +34,7 @@ import { useAuth } from "@/context/AuthContext";
 import { sendChatMessage } from "@/services/chatMutation";
 import { supabase } from "@/lib/supabaseClient";
 import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
+import { unregisterForEvent } from "@/services/eventMutations";
 
 // TODO: CHECK FOR IF THE USER THAT IS ON THE PAGE HAS THE SAME USER ID AS LISTED FOR THE ATTENDEES IN THE CHAT (route to the sign up if prompted)
 // TODO: Make the username of the message sender in bold
@@ -40,6 +42,7 @@ import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 export default function EventChatPage() {
   // useParams to get the event info from the backend
   const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
 
   // get the current user
   const { user } = useAuth();
@@ -71,7 +74,7 @@ export default function EventChatPage() {
     select: (messages) => mapMessagesToChatData(messages, user?.id),
   });
 
-  // NOTE: dummy data to show in the UI component so that the UI looks like it has messages (will remove later on)
+  // NOTE: dummy data to show in the UI component so that the UI looks like it has messages on the initial load (will remove later on)
   const [messages] = useState<ChatMessageData[]>([
     {
       id: "msg-1",
@@ -109,9 +112,9 @@ export default function EventChatPage() {
     if (messages && messages.length > 0) {
       setOptimisticMessages([]);
     }
-  }, [messages]);
+  }, [messages]); // changes when the messages update
 
-  // state that stores the data of the messages in the new transformed state to be mapped through
+  // initialization of the state that stores the data of the messages in the new transformed state to be mapped through
   const [optimisticMessages, setOptimisticMessages] = useState<
     ChatMessageData[]
   >([]);
@@ -144,7 +147,7 @@ export default function EventChatPage() {
       // onMutate returns the optimisticId to the other parts that need it
       const optimisticId = `temp-${Date.now()}`; // used to get the specific data later on
 
-      // update the users user_metadata so that the full_name and the avatar_url is stored inisde of it
+      // NOTE: update the users user_metadata so that the full_name and the avatar_url is stored inisde of it
       const userMetadata = user?.user_metadata as
         | { full_name?: string; avatar_url?: string }
         | undefined;
@@ -163,7 +166,7 @@ export default function EventChatPage() {
       // add and update the messages to the array of the other messages
       setOptimisticMessages((prev) => [...prev, optimisticMessage]);
 
-      // return the id to access the specific message
+      // return the id to access the specific message later in the function
       return { optimisticId };
     },
 
@@ -184,7 +187,7 @@ export default function EventChatPage() {
         queryKey: ["event-messages", eventId],
       });
 
-      // remove the replacement message after the query refetches and updates with the new dat from the backend
+      // remove the replacement message after the query refetches and updates with only the messages that id that dont match fake messages
       if (context?.optimisticId) {
         setOptimisticMessages((prev) =>
           prev.filter((message) => message.id !== context.optimisticId),
@@ -208,6 +211,24 @@ export default function EventChatPage() {
     sendMessageMutation.mutate(text);
   };
 
+  // mutation to unregister the user from the event
+  const unregisterMutation = useMutation({
+    mutationKey: ["event-unregister", eventId],
+    mutationFn: () => unregisterForEvent(user?.id, eventId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      navigate("/");
+    },
+  });
+
+  // use this function for the button to unregister the user
+  const handleUnregister = (): void => {
+    if (!eventId || !user?.id) {
+      return;
+    }
+    unregisterMutation.mutate();
+  };
+
   // check if there is an error getting the data
   if (error) {
     // return an error message to the user
@@ -223,7 +244,7 @@ export default function EventChatPage() {
     event?.time,
   );
 
-  // show the attendanceCount if not then show 18
+  // show the attendanceCount if not then set the default to 18
   const attendanceCount = event?.attendees_count ?? 18;
 
   // tittle for the event
@@ -242,7 +263,7 @@ export default function EventChatPage() {
     : (event?.description ?? "Chat is open for all attendees.");
   // leverage the backend results when ready, otherwise fall back to temp seed data
 
-  // show the default messages till there are messages to show on the frontend
+  // show the default messages unless there are messages to show on the frontend
   const baseMessages = chatMessages.length > 0 ? chatMessages : messages;
 
   // holds the messages to display in the message box
@@ -339,6 +360,16 @@ export default function EventChatPage() {
                   <span>{attendanceCount} attendees chatting</span>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={handleUnregister}
+                disabled={unregisterMutation.isPending}
+                className="mt-6 w-full rounded-xl bg-black text-white px-4 py-3 text-base font-semibold text-destructive-foreground transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {unregisterMutation.isPending
+                  ? "Leaving event..."
+                  : "Leave Event"}
+              </button>
             </CardContent>
           </Card>
 
@@ -358,9 +389,7 @@ export default function EventChatPage() {
               <ScrollArea className="h-full px-6 py-6">
                 <div className="flex flex-col gap-5">
                   {isChatLoading && chatMessages.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      Loading chat...
-                    </p>
+                    <ChatBubbleLoader />
                   ) : (
                     displayedMessages.map((message) => (
                       <ChatMessage
