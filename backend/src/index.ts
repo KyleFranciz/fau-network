@@ -44,7 +44,55 @@ app.get("/", (_request: Request, response: Response) => {
   response.send("If your seeing this the backend request is working properly");
 });
 
-// TODO: Make a post route for the events to be uploaded to supabase
+// route to create a new event
+app.post("/events", async (request: Request, response: Response) => {
+  try {
+    const {
+      title,
+      description,
+      category_id,
+      image_url,
+      date,
+      time,
+      location,
+      host_id,
+    } = request.body;
+
+    // Validate required fields
+    if (!title || !category_id || !date || !time || !location || !host_id) {
+      return response.status(400).json({
+        error: "Missing required fields: title, category_id, date, time, location, host_id",
+      });
+    }
+
+    // Insert the new event into Supabase
+    const { data, error } = await supabase
+      .from("events")
+      .insert({
+        title,
+        description: description || null,
+        category_id,
+        image_url: image_url || null,
+        date,
+        time,
+        location,
+        host_id,
+        attendees_count: 0,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Supabase Error:", error.message);
+      return response.status(500).json({ error: error.message });
+    }
+
+    return response.status(201).json(data);
+  } catch (err) {
+    console.error("Server Error:", err);
+    return response.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 // supabase route to fetch all events (featured events)
 app.get("/events", async (_request: Request, response: Response) => {

@@ -22,7 +22,7 @@ const CreatedEventsPanel = (props: CreatedEventsPanelProps): ReactElement => {
   const navigate = useNavigate();
 
   const handleCreateEvent = (): void => {
-    navigate("/events");
+    navigate("/events/create");
   };
 
   if (events.length === 0) {
