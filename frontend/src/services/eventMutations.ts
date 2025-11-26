@@ -12,7 +12,7 @@ const API_BASE_URL =
     : // if not set the value to the default
       "http://localhost:8000";
 
-// function to register for an event used in the useMutation hook calls
+// NOTE: function to register for an event used in the useMutation hook calls
 export const registerForEvent = async (
   eventId: string | undefined,
   userId: string | undefined,
@@ -45,6 +45,37 @@ export const registerForEvent = async (
     console.error("Error registering for event:", error);
     toast.error("There was an error registering for an event");
     // throw error so that the fetch fails for the mutation used
+    throw error;
+  }
+};
+
+// NOTE: make a function to remove the make a request to remove the data from the backend
+export const unregisterForEvent = async (
+  userId: string | undefined,
+  eventId: string | undefined,
+): Promise<EventRegisterI> => {
+  try {
+    if (!userId || !eventId) {
+      toast.error(
+        "Please make sure that you are signed in to complete the deletion",
+      );
+      throw new Error("userId or eventId is missing");
+    }
+
+    // notify the user on the frontend of the event that's being deleted
+    toast.info(`Deleting ${eventId} from the database`);
+
+    // make the request to delete the event to the backend
+    const response = await axios.delete(
+      `${API_BASE_URL}/event/register/${eventId}`,
+      // format the data that's being sent
+      { data: { eventId: eventId, userId: userId } },
+    );
+
+    // return the data that was deleted
+    return response.data as EventRegisterI;
+  } catch (error) {
+    console.error(`There was and error deleting the event from the database`);
     throw error;
   }
 };
