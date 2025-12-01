@@ -89,3 +89,18 @@ export const getSpecificEvent = async (
   const response = await axios.get<EventI>(`${API_BASE_URL}/event/${eventId}`);
   return response.data;
 };
+
+// function to get events created by a specific user (host)
+export const getUserCreatedEvents = async (
+  hostId: string,
+): Promise<EventI[]> => {
+  try {
+    const response = await axios.get<EventI[]>(
+      `${API_BASE_URL}/events/host/${hostId}`,
+    );
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error("Error fetching user created events:", error);
+    return [];
+  }
+};

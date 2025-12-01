@@ -22,7 +22,7 @@ const CreatedEventsPanel = (props: CreatedEventsPanelProps): ReactElement => {
   const navigate = useNavigate();
 
   const handleCreateEvent = (): void => {
-    navigate("/events");
+    navigate("/events/create");
   };
 
   if (events.length === 0) {
@@ -88,6 +88,9 @@ const CreatedEventsPanel = (props: CreatedEventsPanelProps): ReactElement => {
                   variant="ghost"
                   className="rounded-xl opacity-0 transition-opacity group-hover:opacity-100"
                   aria-label={`Manage ${eventItem.name}`}
+                  onClick={() => {
+                    navigate(`/events/${eventItem.id}/edit`);
+                  }}
                 >
                   Manage
                   <ExternalLink className="ml-2 h-4 w-4" />

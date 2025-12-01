@@ -12,6 +12,8 @@ import SignUpPage from "./pages/SignUp";
 import ProfilePage from "./pages/Profile";
 import NotFoundPage from "./pages/NotFound";
 import AuthCallbackPage from "./pages/AuthCallback";
+import CreateEventPage from "./pages/CreateEvent";
+import EditEventPage from "./pages/EditEvent";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
@@ -58,6 +60,14 @@ const router = createBrowserRouter([
         path: "profile", // this is for the profile page to edit the account information
         // TODO: take the user to login page if not signed in already
         element: <ProfilePage />,
+      },
+      {
+        path: "events/create", // this is for creating a new event
+        element: <CreateEventPage />,
+      },
+      {
+        path: "events/:eventId/edit", // this is for editing an event
+        element: <EditEventPage />,
       },
       {
         path: "*", // catch-all route for 404 pages

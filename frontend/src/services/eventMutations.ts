@@ -1,6 +1,6 @@
 //NOTE: this file will have the mutation functions that interact with the backend api, these functions will be used in useMutations to handle mutating data for different events for the components that need them
 import axios from "axios";
-import type { EventRegisterI } from "@/schemas/Events.interface";
+import type { EventI, EventRegisterI } from "@/schemas/Events.interface";
 import { toast } from "sonner"; // used to add popups to notify the progress of event registration
 
 // import the .env variable
@@ -49,6 +49,31 @@ export const registerForEvent = async (
   }
 };
 
+// interface for creating an event
+export interface CreateEventPayload {
+  title: string;
+  description?: string;
+  category_id: string;
+  image_url?: string;
+  date: string;
+  time: string;
+  location: string;
+  host_id: string;
+}
+
+// function to create a new event
+export const createEvent = async (payload: CreateEventPayload): Promise<EventI> => {
+  try {
+    const response = await axios.post<EventI>(`${API_BASE_URL}/events`, payload);
+    toast.success("Event created successfully!");
+    return response.data;
+  } catch (error) {
+    console.error("Error creating event:", error);
+    toast.error("There was an error creating the event");
+    throw error;
+  }
+};
+
 // NOTE: make a function to remove the make a request to remove the data from the backend
 export const unregisterForEvent = async (
   userId: string | undefined,
@@ -76,6 +101,54 @@ export const unregisterForEvent = async (
     return response.data as EventRegisterI;
   } catch (error) {
     console.error(`There was and error deleting the event from the database`);
+    throw error;
+  }
+};
+
+// interface for updating an event
+export interface UpdateEventPayload {
+  title: string;
+  description?: string;
+  category_id: string;
+  image_url?: string;
+  date: string;
+  time: string;
+  location: string;
+  host_id: string;
+}
+
+// function to update an event
+export const updateEvent = async (
+  eventId: string,
+  payload: UpdateEventPayload,
+): Promise<EventI> => {
+  try {
+    const response = await axios.put<EventI>(
+      `${API_BASE_URL}/events/${eventId}`,
+      payload,
+    );
+    toast.success("Event updated successfully!");
+    return response.data;
+  } catch (error) {
+    console.error("Error updating event:", error);
+    toast.error("There was an error updating the event");
+    throw error;
+  }
+};
+
+// function to delete an event
+export const deleteEvent = async (
+  eventId: string,
+  hostId: string,
+): Promise<void> => {
+  try {
+    await axios.delete(`${API_BASE_URL}/events/${eventId}`, {
+      data: { host_id: hostId },
+    });
+    toast.success("Event deleted successfully!");
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    toast.error("There was an error deleting the event");
     throw error;
   }
 };
