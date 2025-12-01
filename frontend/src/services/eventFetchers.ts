@@ -58,15 +58,20 @@ export const getPopularEvents = async (): Promise<EventI[]> => {
 // TODO: Add at later date test the routing to make sure that this is efficient
 export const getCategoryEvents = async (
   categoryId: string, // categoryId passed in so and sent as a param to the backend
+  search?: string, // optional parameter for users searchs
 ): Promise<EventI[]> => {
-  // check if the categoryId is for "All"
-  if (categoryId === "0") {
+  // check if the categoryId is for "All" or if there is a search param
+  if (categoryId === "0" && !search) {
     // run the function  to get the featured events and return them to the frontend
     return getFeaturedEvents();
   }
   // otherwise: get the data for the study events from the backend
   const response = await axios.get<EventI[]>(
     `${API_BASE_URL}/events/category/${categoryId}`,
+    {
+      // search: feild sent to the backend
+      params: search ? { search } : undefined,
+    },
   );
 
   // check the data to make sure its an array, return the data, if not then return an empty array

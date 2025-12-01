@@ -3,4 +3,5 @@
 //interface for the category param from the frontend
 export interface CategoryParams {
   categoryId: string;
+  search?: string;
 }

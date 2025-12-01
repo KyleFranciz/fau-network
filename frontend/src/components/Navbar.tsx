@@ -46,6 +46,7 @@ export default function Navbar() {
             <Link
               to="/profile"
               className="text-lg font-semibold text-gray-800 transition-colors hover:text-gray-900"
+              // NOTE: Might add in a prefetcher for the profile page so that the users initial data is fetched when navigated to
             >
               Profile
             </Link>

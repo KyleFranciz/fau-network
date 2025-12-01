@@ -36,7 +36,7 @@ import { supabase } from "@/lib/supabaseClient";
 import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 import { unregisterForEvent } from "@/services/eventMutations";
 
-// TODO: CHECK FOR IF THE USER THAT IS ON THE PAGE HAS THE SAME USER ID AS LISTED FOR THE ATTENDEES IN THE CHAT (route to the sign up if prompted)
+// WARNING: Check the useMutation to see why the messages aren't automatically refreshing
 // TODO: Make the username of the message sender in bold
 // this is for the event chat room once the user is attending the event
 export default function EventChatPage() {
@@ -217,6 +217,7 @@ export default function EventChatPage() {
     mutationFn: () => unregisterForEvent(user?.id, eventId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      // navigate the user to the home page after they unregister for the event
       navigate("/");
     },
   });

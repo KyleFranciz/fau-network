@@ -64,7 +64,7 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
     const { data, error } = await supabase
       .from("events")
       .select("*")
-      .gte("attendees_count", "10"); // NOTE: get value greater than or equal to...
+      .gte("attendees_count", "20"); // NOTE: get value greater than or equal to...
     //NOTE: changed value to string to cause supabase makes evals based of strings
 
     // check if there is an error when getting the data from supabase
@@ -114,9 +114,14 @@ app.get(
 );
 
 // NOTE: gets the category from the request param to search supabase table
+// TODO: add a search param to get get the users searchTerm to add into the api
 app.get(
   "/events/category/:categoryId",
-  async (_request: Request<CategoryParams>, response: Response) => {
+  async (
+    // search optional query
+    _request: Request<CategoryParams, { search?: string }>,
+    response: Response,
+  ) => {
     try {
       // fetch events from the study category in display them on the frontend
       // TODO: CHANGE THE VALUE TO THE REQUEST ROUTIING WHEN SELECTED
@@ -124,14 +129,32 @@ app.get(
       // save the categoryId from request
       const { categoryId } = _request.params;
 
+      // get the search query from the request
+      const rawSearch = _request.query.search;
+
+      const search = typeof rawSearch === "string" ? rawSearch.trim() : ""; // save if search is a string if not then send and empty string
+
       //NOTE: might do a check to see if the param is equal to all's id and look up all events and then return
 
       console.log(categoryId);
+      console.log("search:", search);
 
-      const { data, error } = await supabase
-        .from("events")
-        .select(`*, categories(*)`) // NOTE: get all the elements for the events as well as the data from the category table
-        .eq("category_id", categoryId);
+      // base query always pulls events + related categories
+      let query = supabase.from("events").select(`*, categories(*)`); // NOTE: get all the elements for the events as well as the data from the category table
+
+      // only filter by category when a specific category (not "All") is selected
+      if (categoryId !== "0") {
+        query = query.eq("category_id", categoryId);
+      }
+
+      // handle case where there is a search param passed in
+      if (search) {
+        // search supabase for an event that matches the title
+        query = query.ilike("title", `%${search}%`); // modify the query to have the info of the events that match
+      }
+
+      // finalize the query that will be sent and structure it to send as data and catch the errors
+      const { data, error } = await query;
 
       // check if there was an error
       if (error) {
@@ -141,7 +164,7 @@ app.get(
         return;
       }
 
-      // return the data
+      // return the data of the query that is found
       return response.json(data);
     } catch (err) {
       console.error("Server Error", err);

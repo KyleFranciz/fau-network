@@ -10,11 +10,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// NOTE: SEARCHBAR WILL JUST BE FOR FILTERING THE EVENTS IN THE PAGE
+// TODO: Work on the searchbar functionality
 export default function EventsPage() {
   // state to hold the category and the category name from the category obj and update when switched
   const [categoryId, setCategoryId] = useState<string>("0");
-  const [categoryName, setCategoryName] = useState<string>("All");
+  const [categoryName, setCategoryName] = useState<string>("All"); // stores the name from the object
+  // WARNING: may have to make null for the console error
+  const [searchTerm, setSearchTerm] = useState<string>(""); // takes in the search parameter to pass into the query or the local page
 
   //TODO: might add description to change as well when switching components
   //NOTE: category selector options to map through on the select section
@@ -35,7 +37,7 @@ export default function EventsPage() {
       <section className="w-full flex justify-center">
         <div className="w-fit items-center flex justify-center mt-8 mb-7">
           <div className="">
-            <SearchBar />
+            <SearchBar value={searchTerm} onChange={setSearchTerm} />
           </div>
           {/* NOTE: ADDED SHADCN SELECTOR TO GET EVENTS TO LOAD OUT ON THE PAGE DEPENDING ON THE EVENT (Map through categories) */}
           <div className="ml-1.5">
@@ -72,10 +74,13 @@ export default function EventsPage() {
       <section>
         <EventSection
           title={`${categoryName} Events`}
-          // TODO: get the description of the category from the backend, might just place it in the obj
           description={`Here are some of the ${categoryName} events going on around campus`}
-          queryKey={["events", "category", categoryId]}
-          queryFn={() => getCategoryEvents(categoryId)}
+          // TODO: add searchTerm to be used in the parameters
+          queryKey={["events", "category", categoryId, searchTerm]} // searchTerm will update whenever the user starts to search for an event
+          queryFn={
+            () => getCategoryEvents(categoryId, searchTerm.trim() || undefined) // send the searchTerm from the input if the user is searching
+            // NOTE: The function will send the search parameter to the backend to be searched through the database
+          }
         />
       </section>
     </div>

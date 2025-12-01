@@ -14,6 +14,8 @@ interface EventSectionProps {
   queryFn?: () => Promise<EventI[]>;
 }
 
+// TODO: handle the if the searchTerm is used in this component, render the search term results
+
 // NOTE: Reusable event showcase that can load any event grouping via React Query.
 export default function EventSection({
   title,
