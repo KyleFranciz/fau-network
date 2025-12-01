@@ -140,7 +140,7 @@ app.get(
       const { eventId } = request.params;
       const { data, error } = await supabase
         .from("events")
-        .select("*")
+        .select(`*, categories(*)`)
         .eq("id", eventId)
         .single();
 
@@ -194,6 +194,151 @@ app.get(
     } catch (err) {
       console.error("Server Error", err);
       response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to fetch events created by a specific user (host)
+app.get(
+  "/events/host/:hostId",
+  async (request: Request<{ hostId: string }>, response: Response) => {
+    try {
+      const { hostId } = request.params;
+
+      const { data, error } = await supabase
+        .from("events")
+        .select(`*, categories(*)`)
+        .eq("host_id", hostId)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      return response.json(data ?? []);
+    } catch (err) {
+      console.error("Server Error", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to update an event (only by host)
+app.put(
+  "/events/:eventId",
+  async (request: Request<{ eventId: string }>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      const {
+        title,
+        description,
+        category_id,
+        image_url,
+        date,
+        time,
+        location,
+        host_id,
+      } = request.body;
+
+      // Validate required fields
+      if (!title || !category_id || !date || !time || !location || !host_id) {
+        return response.status(400).json({
+          error: "Missing required fields: title, category_id, date, time, location, host_id",
+        });
+      }
+
+      // First, verify the event exists and the user is the host
+      const { data: existingEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("host_id")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError || !existingEvent) {
+        return response.status(404).json({ error: "Event not found" });
+      }
+
+      if (existingEvent.host_id !== host_id) {
+        return response.status(403).json({
+          error: "You are not authorized to update this event",
+        });
+      }
+
+      // Update the event
+      const { data, error } = await supabase
+        .from("events")
+        .update({
+          title,
+          description: description || null,
+          category_id,
+          image_url: image_url || null,
+          date,
+          time,
+          location,
+        })
+        .eq("id", eventId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      return response.json(data);
+    } catch (err) {
+      console.error("Server Error:", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to delete an event (only by host)
+app.delete(
+  "/events/:eventId",
+  async (request: Request<{ eventId: string }>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      const { host_id } = request.body;
+
+      if (!host_id) {
+        return response.status(400).json({ error: "host_id is required" });
+      }
+
+      // First, verify the event exists and the user is the host
+      const { data: existingEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("host_id")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError || !existingEvent) {
+        return response.status(404).json({ error: "Event not found" });
+      }
+
+      if (existingEvent.host_id !== host_id) {
+        return response.status(403).json({
+          error: "You are not authorized to delete this event",
+        });
+      }
+
+      // Delete related records first (event_attendees, event_messages)
+      await supabase.from("event_attendees").delete().eq("event_id", eventId);
+      await supabase.from("event_messages").delete().eq("event_id", eventId);
+
+      // Delete the event
+      const { error } = await supabase.from("events").delete().eq("id", eventId);
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      return response.json({ message: "Event deleted successfully" });
+    } catch (err) {
+      console.error("Server Error:", err);
+      return response.status(500).json({ error: "Internal Server Error" });
     }
   },
 );

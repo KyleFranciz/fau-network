@@ -104,3 +104,51 @@ export const unregisterForEvent = async (
     throw error;
   }
 };
+
+// interface for updating an event
+export interface UpdateEventPayload {
+  title: string;
+  description?: string;
+  category_id: string;
+  image_url?: string;
+  date: string;
+  time: string;
+  location: string;
+  host_id: string;
+}
+
+// function to update an event
+export const updateEvent = async (
+  eventId: string,
+  payload: UpdateEventPayload,
+): Promise<EventI> => {
+  try {
+    const response = await axios.put<EventI>(
+      `${API_BASE_URL}/events/${eventId}`,
+      payload,
+    );
+    toast.success("Event updated successfully!");
+    return response.data;
+  } catch (error) {
+    console.error("Error updating event:", error);
+    toast.error("There was an error updating the event");
+    throw error;
+  }
+};
+
+// function to delete an event
+export const deleteEvent = async (
+  eventId: string,
+  hostId: string,
+): Promise<void> => {
+  try {
+    await axios.delete(`${API_BASE_URL}/events/${eventId}`, {
+      data: { host_id: hostId },
+    });
+    toast.success("Event deleted successfully!");
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    toast.error("There was an error deleting the event");
+    throw error;
+  }
+};

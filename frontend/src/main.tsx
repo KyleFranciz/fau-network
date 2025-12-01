@@ -13,6 +13,7 @@ import ProfilePage from "./pages/Profile";
 import NotFoundPage from "./pages/NotFound";
 import AuthCallbackPage from "./pages/AuthCallback";
 import CreateEventPage from "./pages/CreateEvent";
+import EditEventPage from "./pages/EditEvent";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
       {
         path: "events/create", // this is for creating a new event
         element: <CreateEventPage />,
+      },
+      {
+        path: "events/:eventId/edit", // this is for editing an event
+        element: <EditEventPage />,
       },
       {
         path: "*", // catch-all route for 404 pages
