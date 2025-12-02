@@ -47,7 +47,7 @@ export default function EventCard({
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 to-gray-700/40" />
         </Link>
         <button
-          onMouseEnter={onJoinClick}
+          onClick={onJoinClick}
           className="absolute cursor-pointer bottom-3 right-3 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium px-4 py-2 rounded-3xl transition-colors duration-200"
           aria-label="Join event"
         >
