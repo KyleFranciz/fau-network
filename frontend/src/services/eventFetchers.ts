@@ -104,3 +104,37 @@ export const getUserCreatedEvents = async (
     return [];
   }
 };
+
+// interface for the backend response of attended events
+export interface AttendedEventResponse {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: string;
+  joined_at: string;
+  events: {
+    id: string;
+    title: string | null;
+    description: string | null;
+    date: string | null;
+    time: string | null;
+    location: string | null;
+    image_url: string | null;
+    categories: { id: string; name: string; description: string } | null;
+  };
+}
+
+// function to get events that a user has attended/registered for
+export const getUserAttendedEvents = async (
+  userId: string,
+): Promise<AttendedEventResponse[]> => {
+  try {
+    const response = await axios.get<AttendedEventResponse[]>(
+      `${API_BASE_URL}/events/attendee/${userId}`,
+    );
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error("Error fetching user attended events:", error);
+    return [];
+  }
+};

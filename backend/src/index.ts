@@ -249,6 +249,64 @@ app.get(
   },
 );
 
+// route to fetch events that a user has attended/registered for
+app.get(
+  "/events/attendee/:userId",
+  async (request: Request<{ userId: string }>, response: Response) => {
+    try {
+      const { userId } = request.params;
+
+      // First, get all event_attendees records for this user
+      const { data: attendeesData, error: attendeesError } = await supabase
+        .from("event_attendees")
+        .select("id, event_id, user_id, status, joined_at")
+        .eq("user_id", userId)
+        .order("joined_at", { ascending: false });
+
+      if (attendeesError) {
+        console.error("Supabase Error:", attendeesError.message);
+        return response.status(500).json({ error: attendeesError.message });
+      }
+
+      if (!attendeesData || attendeesData.length === 0) {
+        return response.json([]);
+      }
+
+      // Get all event IDs
+      const eventIds = attendeesData.map((attendee: { event_id: string }) => attendee.event_id);
+
+      // Fetch the events with their categories
+      const { data: eventsData, error: eventsError } = await supabase
+        .from("events")
+        .select(`id, title, description, date, time, location, image_url, categories(*)`)
+        .in("id", eventIds);
+
+      if (eventsError) {
+        console.error("Supabase Error:", eventsError.message);
+        return response.status(500).json({ error: eventsError.message });
+      }
+
+      // Combine the data: map attendees with their corresponding events
+      const combinedData = attendeesData.map((attendee: { id: string; event_id: string; user_id: string; status: string; joined_at: string }) => {
+        const event = eventsData?.find((e: { id: string }) => e.id === attendee.event_id);
+        return {
+          id: attendee.id,
+          event_id: attendee.event_id,
+          user_id: attendee.user_id,
+          status: attendee.status,
+          joined_at: attendee.joined_at,
+          events: event || null,
+        };
+      });
+
+      return response.json(combinedData);
+    } catch (err) {
+      console.error("Server Error", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
 // route to update an event (only by host)
 app.put(
   "/events/:eventId",

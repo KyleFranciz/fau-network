@@ -1,4 +1,5 @@
 import { Clock, ExternalLink, Filter, MapPin } from "lucide-react";
+import { useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,7 @@ const statusCopy: Record<AttendedEvent["status"], { label: string; variant: "def
 
 const EventHistoryPanel = (props: EventHistoryPanelProps): ReactElement => {
   const { events } = props;
+  const navigate = useNavigate();
   if (events.length === 0) {
     return (
       <Card>
@@ -26,7 +28,13 @@ const EventHistoryPanel = (props: EventHistoryPanelProps): ReactElement => {
         <CardContent className="flex h-48 flex-col items-center justify-center text-center">
           <p className="text-base font-medium">No events yet</p>
           <p className="text-sm text-muted-foreground">Attend your first event to see it here.</p>
-          <Button className="mt-4 rounded-xl" aria-label="Browse upcoming events">
+          <Button
+            className="mt-4 rounded-xl"
+            aria-label="Browse upcoming events"
+            onClick={() => {
+              navigate("/events");
+            }}
+          >
             Browse events
           </Button>
         </CardContent>
@@ -70,7 +78,14 @@ const EventHistoryPanel = (props: EventHistoryPanelProps): ReactElement => {
                     </span>
                   </div>
                 </div>
-                <Button variant="ghost" className="rounded-xl opacity-0 transition-opacity group-hover:opacity-100" aria-label={`View ${eventItem.name}`}>
+                <Button
+                  variant="ghost"
+                  className="rounded-xl opacity-0 transition-opacity group-hover:opacity-100"
+                  aria-label={`View ${eventItem.name}`}
+                  onClick={() => {
+                    navigate(`/event/${eventItem.id}`);
+                  }}
+                >
                   View details
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </Button>

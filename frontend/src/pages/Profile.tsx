@@ -3,7 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useAuth } from "@/context/AuthContext";
 import { formatDateTime } from "@/lib/formatDataTime";
-import { getUserCreatedEvents } from "@/services/eventFetchers";
+import {
+  getUserCreatedEvents,
+  getUserAttendedEvents,
+  type AttendedEventResponse,
+} from "@/services/eventFetchers";
 import type { EventI } from "@/schemas/Events.interface";
 import { ProfileHeaderCard } from "./profileComponents/ProfileHeaderCard";
 import { ProfileNavigationTabs } from "./profileComponents/ProfileNavigationTabs";
@@ -13,34 +17,6 @@ import type {
 } from "./profileComponents/profile.types";
 
 //TODO: Fix the typing of the component and fix errors in the schema to fix the errors in the lsp
-
-const attendedEvents: readonly AttendedEvent[] = [
-  {
-    id: "1",
-    name: "AI Innovation Summit",
-    date: "Jan 12, 2025 · 5:30 PM",
-    location: "Tech Hall, FAU",
-    status: "checked-in",
-    description: "Panel and networking focused on responsible AI adoption.",
-  },
-  {
-    id: "2",
-    name: "Ocean Cleanup Sprint",
-    date: "Feb 02, 2025 · 10:00 AM",
-    location: "Boca Raton Beach",
-    status: "registered",
-    description: "Community action day to study microplastic removal methods.",
-  },
-  {
-    id: "3",
-    name: "StartUp Roast Pitch",
-    date: "Mar 18, 2025 · 6:00 PM",
-    location: "Innovation Hub",
-    status: "waitlisted",
-    description:
-      "Friendly roast where founders pitch to mentors for honest feedback.",
-  },
-];
 
 // Helper function to determine event status based on date/time
 const getEventStatus = (
@@ -95,6 +71,24 @@ const mapEventToCreatedEventStat = (event: EventI): CreatedEventStat => {
   };
 };
 
+// Helper function to map backend response to AttendedEvent
+const mapAttendedEventResponseToAttendedEvent = (
+  response: AttendedEventResponse,
+): AttendedEvent => {
+  const event = response.events;
+  const formattedDate = formatDateTime(event.date, event.time);
+  const status = response.status as AttendedEvent["status"];
+
+  return {
+    id: event.id,
+    name: event.title ?? "Untitled Event",
+    date: formattedDate,
+    location: event.location ?? "Location TBA",
+    status: status === "checked-in" || status === "registered" || status === "waitlisted" ? status : "registered",
+    description: event.description ?? "",
+  };
+};
+
 const ProfilePage = (): ReactElement => {
   const { user } = useAuth();
 
@@ -105,10 +99,23 @@ const ProfilePage = (): ReactElement => {
     enabled: !!user?.id,
   });
 
+  // Fetch user-attended events
+  const { data: attendedEventsResponse = [] } = useQuery<AttendedEventResponse[]>({
+    queryKey: ["user-attended-events", user?.id],
+    queryFn: () => getUserAttendedEvents(user?.id ?? ""),
+    enabled: !!user?.id,
+  });
+
   // Map events to CreatedEventStat format
   const createdEvents: readonly CreatedEventStat[] = userEvents.map(
     mapEventToCreatedEventStat,
   );
+
+  // Map attended events response to AttendedEvent format
+  const attendedEvents: readonly AttendedEvent[] = attendedEventsResponse.map(
+    mapAttendedEventResponseToAttendedEvent,
+  );
+
   return (
     <section className="container mx-auto max-w-7xl space-y-6 p-4 md:p-8">
       <Breadcrumb
