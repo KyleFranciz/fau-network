@@ -61,7 +61,8 @@ app.post("/events", async (request: Request, response: Response) => {
     // Validate required fields
     if (!title || !category_id || !date || !time || !location || !host_id) {
       return response.status(400).json({
-        error: "Missing required fields: title, category_id, date, time, location, host_id",
+        error:
+          "Missing required fields: title, category_id, date, time, location, host_id",
       });
     }
 
@@ -222,6 +223,7 @@ app.get(
 );
 
 // route to fetch events created by a specific user (host)
+// NOTE: Might use for the event chat to be able to identify the host of the event
 app.get(
   "/events/host/:hostId",
   async (request: Request<{ hostId: string }>, response: Response) => {
@@ -267,7 +269,8 @@ app.put(
       // Validate required fields
       if (!title || !category_id || !date || !time || !location || !host_id) {
         return response.status(400).json({
-          error: "Missing required fields: title, category_id, date, time, location, host_id",
+          error:
+            "Missing required fields: title, category_id, date, time, location, host_id",
         });
       }
 
@@ -351,7 +354,10 @@ app.delete(
       await supabase.from("event_messages").delete().eq("event_id", eventId);
 
       // Delete the event
-      const { error } = await supabase.from("events").delete().eq("id", eventId);
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId);
 
       if (error) {
         console.error("Supabase Error:", error.message);
