@@ -31,7 +31,7 @@ app.use(
   cors({
     origin: "http://localhost:5173", // the frontend port
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
@@ -97,7 +97,10 @@ app.post("/events", async (request: Request, response: Response) => {
 
 // supabase route to fetch all events (featured events)
 app.get("/events", async (_request: Request, response: Response) => {
-  const { data, error } = await supabase.from("events").select("*");
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .or("status.neq.removed,status.is.null");
   if (error) {
     response.status(500).json({ error: error.message });
   }
@@ -113,7 +116,8 @@ app.get("/events/popular", async (_request: Request, response: Response) => {
     const { data, error } = await supabase
       .from("events")
       .select("*")
-      .gte("attendees_count", "20"); // NOTE: get value greater than or equal to...
+      .gte("attendees_count", "20") // NOTE: get value greater than or equal to...
+      .or("status.neq.removed,status.is.null");
     //NOTE: changed value to string to cause supabase makes evals based of strings
 
     // check if there is an error when getting the data from supabase
@@ -189,7 +193,10 @@ app.get(
       console.log("search:", search);
 
       // base query always pulls events + related categories
-      let query = supabase.from("events").select(`*, categories(*)`); // NOTE: get all the elements for the events as well as the data from the category table
+      let query = supabase
+        .from("events")
+        .select(`*, categories(*)`) // NOTE: get all the elements for the events as well as the data from the category table
+        .or("status.neq.removed,status.is.null");
 
       // only filter by category when a specific category (not "All") is selected
       if (categoryId !== "0") {
@@ -316,6 +323,73 @@ app.get(
       return response.json(combinedData);
     } catch (err) {
       console.error("Server Error", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to update an event status (admin or host)
+app.patch(
+  "/events/:eventId/status",
+  async (request: Request<{ eventId: string }>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      const { status, removal_reason, userId } = request.body;
+
+      if (!userId || !status) {
+        return response.status(400).json({ error: "Missing userId or status" });
+      }
+
+      // Fetch the user to check for admin privileges
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("admin")
+        .eq("id", userId)
+        .single();
+
+      if (userError || !user) {
+        return response.status(404).json({ error: "User not found" });
+      }
+
+      const isAdmin = user.admin;
+
+      // Verify the event exists
+      const { data: existingEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("host_id")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError || !existingEvent) {
+        return response.status(404).json({ error: "Event not found" });
+      }
+
+      // Allow if admin or host
+      if (existingEvent.host_id !== userId && !isAdmin) {
+        return response.status(403).json({
+          error: "You are not authorized to update this event status",
+        });
+      }
+
+      // Update the event status
+      const { data, error } = await supabase
+        .from("events")
+        .update({
+          status,
+          removal_reason: removal_reason || null,
+        })
+        .eq("id", eventId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      return response.json(data);
+    } catch (err) {
+      console.error("Server Error:", err);
       return response.status(500).json({ error: "Internal Server Error" });
     }
   },

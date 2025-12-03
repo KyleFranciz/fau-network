@@ -11,6 +11,7 @@ interface UserRow {
   profile_image: string | null;
   bio: string | null;
   attended: number | null;
+  admin?: boolean;
   created_at?: string;
 }
 
@@ -26,7 +27,7 @@ export const getUserProfile = async (
   try {
     const { data, error } = await supabase
       .from("users")
-      .select("id, full_name, email, profile_image, bio, attended")
+      .select("id, full_name, email, profile_image, bio, attended, admin")
       .eq("id", userId)
       .maybeSingle();
 
@@ -53,7 +54,8 @@ export const getUserProfile = async (
       headline: "", // Not in database schema yet
       website: "", // Not in database schema yet
       bio: userRow.bio ?? "",
-      attended: userRow.attended ?? 0
+      attended: userRow.attended ?? 0,
+      admin: userRow.admin ?? false,
     };
 
     return profile;

@@ -148,6 +148,26 @@ export const updateEvent = async (
   }
 };
 
+export const updateEventStatus = async (
+  eventId: string,
+  status: string,
+  userId: string,
+  removalReason?: string,
+): Promise<EventI> => {
+  try {
+    const response = await axios.patch<EventI>(
+      `${API_BASE_URL}/events/${eventId}/status`,
+      { status, userId, removal_reason: removalReason },
+    );
+    toast.success(`Event ${status === "removed" ? "removed" : "updated"} successfully!`);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating event status:", error);
+    toast.error("There was an error updating the event status");
+    throw error;
+  }
+};
+
 // function to delete an event
 export const deleteEvent = async (
   eventId: string,

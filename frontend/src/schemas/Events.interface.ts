@@ -36,6 +36,8 @@ export interface EventI {
   location: string | null;
   host_id: string | null;
   attendees_count: number | null; // note: backend typo preserved
+  status?: string;
+  removal_reason?: string | null;
 }
 
 // Event interface for registering for an event

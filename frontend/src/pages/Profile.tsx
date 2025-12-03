@@ -22,7 +22,12 @@ import type {
 const getEventStatus = (
   date: string | null,
   time: string | null,
+  dbStatus?: string,
 ): CreatedEventStat["status"] => {
+  if (dbStatus === "removed") {
+    return "removed";
+  }
+
   if (!date) {
     return "draft";
   }
@@ -57,7 +62,7 @@ const getEventStatus = (
 
 // Helper function to map EventI to CreatedEventStat
 const mapEventToCreatedEventStat = (event: EventI): CreatedEventStat => {
-  const status = getEventStatus(event.date, event.time);
+  const status = getEventStatus(event.date, event.time, event.status);
   const formattedDate = formatDateTime(event.date, event.time);
 
   return {
@@ -68,6 +73,7 @@ const mapEventToCreatedEventStat = (event: EventI): CreatedEventStat => {
     status,
     description: event.description ?? "",
     attendeesCount: event.attendees_count ?? 0,
+    removalReason: event.removal_reason,
   };
 };
 
