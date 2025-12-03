@@ -15,6 +15,7 @@ import { getAttendanceStatus } from "@/services/eventCheckers";
 import ActionCalloutCard from "@/components/ActionCalloutCard";
 import ActionCalloutCardSkeleton from "@/components/ActionCalloutCardSkeleton";
 import { AlertCircle, MessageSquare } from "lucide-react";
+import { getUserProfile } from "@/services/user";
 // import { toast } from "sonner";
 
 // Page for the event details
@@ -30,7 +31,7 @@ export default function EventDetailPage() {
 
   // check for the users current login status and get the user obj
   const { user } = useAuth(); // used to pass in the userId
-  const userId = user?.id;
+  const userId = user?.id ? user?.id : "";
 
   // function get data for this event details page
   const {
@@ -46,6 +47,14 @@ export default function EventDetailPage() {
   // TODO: make a funtion to get the host information for the this page
 
   const shouldCheckRegistration = Boolean(userId && eventId);
+
+  // function to get the the user's profile information to pass into register and unregister function
+  // TODO: Account for the error state
+  const { data: profileData, error: profileError } = useQuery({
+    queryKey: ["profile-data", userId, eventId],
+    queryFn: () => getUserProfile(userId),
+    enabled: Boolean(userId),
+  });
 
   // function to get users attendee status
   const {
@@ -68,12 +77,18 @@ export default function EventDetailPage() {
   // useMutation function to update the attendee and the event information upon registration
   const registerMutation = useMutation({
     mutationKey: ["event-registration", eventId], // update the event info upon registration
-    mutationFn: () => registerForEvent(eventId, user?.id),
+    mutationFn: () =>
+      registerForEvent(
+        eventId,
+        user?.id,
+        profileData?.name, // users username to be sent to the backend
+        profileData?.email, // users email is sent to the backend
+      ),
     // route the user to the chatpage upon registration
     onSuccess: () => {
       // invalidate the query so that the event_id has to refresh
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
-      refetchAttendanceStatus();
+      refetchAttendanceStatus(); // refetch the attendees status
 
       // navigate to the next page
       navigate(`/event/${eventId}/chat`);

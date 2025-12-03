@@ -68,15 +68,15 @@ export default function EventCard({
         </p>
         <div className="flex items-center gap-2 pt-2">
           {/* NOTE: Avatar images for the card  */}
-          <div className="flex items-center -space-x-2">
+          <div className="flex items-center -space-x-4">
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="h-7 w-7 rounded-full bg-muted border-2 border-card"
+                className="h-10 w-10 rounded-full bg-muted border-2 border-card"
               />
             ))}
           </div>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm font-bold text-black">
             {attendees} attendees
           </span>
         </div>

@@ -7,4 +7,7 @@ export interface EventRegisterParams {
   eventId: string;
   userId: string;
   registeredDate: string;
+  name?: string;
+  email?: string;
 }
+

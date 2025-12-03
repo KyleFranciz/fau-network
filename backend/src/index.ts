@@ -273,12 +273,16 @@ app.get(
       }
 
       // Get all event IDs
-      const eventIds = attendeesData.map((attendee: { event_id: string }) => attendee.event_id);
+      const eventIds = attendeesData.map(
+        (attendee: { event_id: string }) => attendee.event_id,
+      );
 
       // Fetch the events with their categories
       const { data: eventsData, error: eventsError } = await supabase
         .from("events")
-        .select(`id, title, description, date, time, location, image_url, categories(*)`)
+        .select(
+          `id, title, description, date, time, location, image_url, categories(*)`,
+        )
         .in("id", eventIds);
 
       if (eventsError) {
@@ -287,17 +291,27 @@ app.get(
       }
 
       // Combine the data: map attendees with their corresponding events
-      const combinedData = attendeesData.map((attendee: { id: string; event_id: string; user_id: string; status: string; joined_at: string }) => {
-        const event = eventsData?.find((e: { id: string }) => e.id === attendee.event_id);
-        return {
-          id: attendee.id,
-          event_id: attendee.event_id,
-          user_id: attendee.user_id,
-          status: attendee.status,
-          joined_at: attendee.joined_at,
-          events: event || null,
-        };
-      });
+      const combinedData = attendeesData.map(
+        (attendee: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          status: string;
+          joined_at: string;
+        }) => {
+          const event = eventsData?.find(
+            (e: { id: string }) => e.id === attendee.event_id,
+          );
+          return {
+            id: attendee.id,
+            event_id: attendee.event_id,
+            user_id: attendee.user_id,
+            status: attendee.status,
+            joined_at: attendee.joined_at,
+            events: event || null,
+          };
+        },
+      );
 
       return response.json(combinedData);
     } catch (err) {
@@ -430,17 +444,20 @@ app.delete(
   },
 );
 
-// route to register for an event
+// route to register an attendee for an event
+// NOTE: link google sheets function in order to save the necessary data into the list
 app.post(
   "/events/register/:eventId",
   async (request: Request<EventRegisterParams>, response: Response) => {
     try {
-      const { eventId, userId, registeredDate } = request.body;
+      // NOTE: name and email is for adding to the google sheet
+      const { eventId, userId, registeredDate, name, email } = request.body;
 
       // NOTE: data isn't being returned (noting for lsp reasons, might just remove as a variable)
       const { data, error } = await supabase.from("event_attendees").insert({
         event_id: eventId,
         user_id: userId,
+        // NOTE: might add the users full_name and email to the sheet
         status: "registered",
         joined_at: registeredDate,
       });
@@ -449,6 +466,9 @@ app.post(
         response.status(500).json({ error: error.message });
         return;
       }
+
+      // add the attendees info to the google sheet to be viewed
+      // log the info to make sure that the data is sending correctly
 
       // After the user is registered, update the event attendees count
       // Fetch the current attendees_count

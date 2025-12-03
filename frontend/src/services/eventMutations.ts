@@ -13,9 +13,12 @@ const API_BASE_URL =
       "http://localhost:8000";
 
 // NOTE: function to register for an event used in the useMutation hook calls
+// NOTE: Add in the username in to be passed in to be sent to the backend
 export const registerForEvent = async (
   eventId: string | undefined,
   userId: string | undefined,
+  name: string | undefined,
+  email: string | undefined,
 ): Promise<EventRegisterI> => {
   try {
     // check if there is any userId or eventId before trying
@@ -31,9 +34,13 @@ export const registerForEvent = async (
     const response = await axios.post(
       `${API_BASE_URL}/events/register/${eventId}`,
       {
+        // for the supabase table
         eventId: eventId,
         userId: userId,
-        registeredDate: new Date().toISOString(),
+        registeredDate: new Date().toISOString(), // keeps track for the database and the spredsheet
+        // needed for the spredsheet
+        name: name,
+        email: email,
       },
     );
 
@@ -62,9 +69,14 @@ export interface CreateEventPayload {
 }
 
 // function to create a new event
-export const createEvent = async (payload: CreateEventPayload): Promise<EventI> => {
+export const createEvent = async (
+  payload: CreateEventPayload,
+): Promise<EventI> => {
   try {
-    const response = await axios.post<EventI>(`${API_BASE_URL}/events`, payload);
+    const response = await axios.post<EventI>(
+      `${API_BASE_URL}/events`,
+      payload,
+    );
     toast.success("Event created successfully!");
     return response.data;
   } catch (error) {
