@@ -9,12 +9,16 @@ import cors from "cors";
 import { CategoryParams } from "./schema/category.schema";
 import { EventParams, EventRegisterParams } from "./schema/events.schema";
 import {
-  EventMessage,
   EventMessageBody,
   EventMessageWithUser,
 } from "./schema/messages.schema";
+import {
+  appendAttendeeToEventTab,
+  generateRegistrationId,
+  removeAttendeeFromEventTab,
+} from "./googleSheets";
 
-// env variables that are needed to run the server
+// set up the dotenv
 dotenv.config();
 
 // change the .env variable into a number
@@ -102,7 +106,7 @@ app.get("/events", async (_request: Request, response: Response) => {
     .select("*")
     .or("status.neq.removed,status.is.null");
   if (error) {
-    response.status(500).json({ error: error.message });
+    return response.status(500).json({ error: error.message });
   }
   response.json(data);
 });
@@ -524,8 +528,19 @@ app.post(
   "/events/register/:eventId",
   async (request: Request<EventRegisterParams>, response: Response) => {
     try {
+      const { eventId } = request.params;
       // NOTE: name and email is for adding to the google sheet
-      const { eventId, userId, registeredDate, name, email } = request.body;
+      const { eventName, userId, registeredDate, userName, email } =
+        request.body;
+
+      // check if there is a userId and eventId
+      if (!eventId || !userId) {
+        return response.status(400).json({
+          error: "Missing userId or eventId, please provide them and try again",
+        });
+      }
+
+      const registrationId = generateRegistrationId(eventId, userId);
 
       // NOTE: data isn't being returned (noting for lsp reasons, might just remove as a variable)
       const { data, error } = await supabase.from("event_attendees").insert({
@@ -541,8 +556,24 @@ app.post(
         return;
       }
 
-      // add the attendees info to the google sheet to be viewed
-      // log the info to make sure that the data is sending correctly
+      // try catch to make sure catch google sheets errors
+      try {
+        // add the attendees info to the google sheet to be viewed
+        await appendAttendeeToEventTab({
+          registrationId,
+          eventId: eventId,
+          eventName: eventName, // got from the frontend
+          attendeeName: userName, // got from the frontend
+          attendeeEmail: email, // got from the frontend
+          timestamp: registeredDate,
+        });
+        // log if there is an error in adding to the google sheets
+        console.log(`row has been added to google sheets`);
+      } catch (sheetsError) {
+        console.error({
+          error: `Data failed to add to google sheets: ${sheetsError}`,
+        });
+      }
 
       // After the user is registered, update the event attendees count
       // Fetch the current attendees_count
@@ -585,10 +616,19 @@ app.delete(
   async (request: Request<EventRegisterParams>, response: Response) => {
     try {
       // get the params from the request
-      const { eventId, userId } = request.body; // might not need to use the registeredDate to remove the user
+      const { eventId } = request.params;
+      const { userId } = request.body; // might not need to use the registeredDate to remove the user
+
+      if (!userId) {
+        return response.status(400).json({
+          error: "Missing userId, please provide it and try again",
+        });
+      }
+
+      const registrationId = generateRegistrationId(eventId, userId);
 
       // remove the user from the attendees table for the event (might not need to return the data)
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("event_attendees")
         .delete()
         .eq("event_id", eventId)
@@ -601,9 +641,48 @@ app.delete(
         });
       }
 
-      // otherwise
+      const { data: currentEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("attendees_count,title")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError) {
+        console.error("Supabase Fetch Error:", fetchError.message);
+        return response.status(500).json({ error: fetchError.message });
+      }
+
+      const currentCount = currentEvent?.attendees_count || 0;
+      const nextCount = currentCount > 0 ? currentCount - 1 : 0;
+      const { error: updateError } = await supabase
+        .from("events")
+        .update({ attendees_count: nextCount })
+        .eq("id", eventId);
+
+      if (updateError) {
+        console.error("Supabase Update Error:", updateError.message);
+        return response.status(500).json({ error: updateError.message });
+      }
+
+      const eventTitle = currentEvent?.title;
+      if (eventTitle) {
+        try {
+          await removeAttendeeFromEventTab(eventId, eventTitle, registrationId);
+        } catch (sheetsError) {
+          console.error(
+            `Failed to remove attendee ${registrationId} from Google Sheets`,
+            sheetsError,
+          );
+        }
+      } else {
+        console.warn(
+          `Event ${eventId} missing title; skipping Google Sheets removal`,
+        );
+      }
+
       return response.json({
-        message: `This user got deleted from the database: ${data}`,
+        message: "This user got deleted from the database",
+        attendees_count: nextCount,
       });
     } catch (error) {
       // catch if there is an error with deleting the user from the database

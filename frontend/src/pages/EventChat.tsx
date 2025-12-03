@@ -218,7 +218,10 @@ export default function EventChatPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
       // navigate the user to the home page after they unregister for the event
-      navigate("/");
+      (queryClient.invalidateQueries({
+        queryKey: ["attendee-status", user?.id, eventId],
+      }),
+        navigate("/"));
     },
   });
 

@@ -18,7 +18,7 @@ interface UserRow {
 // Accept user as an argument instead of reading from useAuth() directly.
 // This makes the function usable outside of React components/hooks context.
 export const getUserProfile = async (
-  userId: string | null
+  userId: string | null,
 ): Promise<UserProfileDisplay | null> => {
   if (!userId) {
     return null;
@@ -30,8 +30,6 @@ export const getUserProfile = async (
       .select("id, full_name, email, profile_image, bio, attended, admin")
       .eq("id", userId)
       .maybeSingle();
-
-    console.log("Data:", data);
 
     if (error) {
       console.error("Error fetching user profile:", error);
@@ -64,7 +62,3 @@ export const getUserProfile = async (
     return null;
   }
 };
-
-// function to get the host information to pass to the needed components
-
-// function to tell if the user is registered to an event

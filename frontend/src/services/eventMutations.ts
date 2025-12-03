@@ -16,8 +16,9 @@ const API_BASE_URL =
 // NOTE: Add in the username in to be passed in to be sent to the backend
 export const registerForEvent = async (
   eventId: string | undefined,
+  eventName: string | undefined, // used for google sheets
   userId: string | undefined,
-  name: string | undefined,
+  userName: string | undefined,
   email: string | undefined,
 ): Promise<EventRegisterI> => {
   try {
@@ -36,10 +37,11 @@ export const registerForEvent = async (
       {
         // for the supabase table
         eventId: eventId,
+        eventName: eventName,
         userId: userId,
         registeredDate: new Date().toISOString(), // keeps track for the database and the spredsheet
         // needed for the spredsheet
-        name: name,
+        userName: userName,
         email: email,
       },
     );
@@ -100,7 +102,7 @@ export const unregisterForEvent = async (
     }
 
     // notify the user on the frontend of the event that's being deleted
-    toast.info(`Deleting ${eventId} from the database`);
+    toast.info(` Currently unregistering this event `);
 
     // make the request to delete the event to the backend
     const response = await axios.delete(
@@ -108,6 +110,8 @@ export const unregisterForEvent = async (
       // format the data that's being sent
       { data: { eventId: eventId, userId: userId } },
     );
+
+    toast.success("Successfully unregistered for the event");
 
     // return the data that was deleted
     return response.data as EventRegisterI;
@@ -159,7 +163,9 @@ export const updateEventStatus = async (
       `${API_BASE_URL}/events/${eventId}/status`,
       { status, userId, removal_reason: removalReason },
     );
-    toast.success(`Event ${status === "removed" ? "removed" : "updated"} successfully!`);
+    toast.success(
+      `Event ${status === "removed" ? "removed" : "updated"} successfully!`,
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating event status:", error);

@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { toast } from "sonner";
 
 export default function Navbar() {
   // check the auth state
@@ -12,8 +13,10 @@ export default function Navbar() {
   const handleSignOut = async (): Promise<void> => {
     try {
       await signOut();
+      toast.success("Signed out successfully");
     } catch (error) {
       console.error("Failed to sign out", error);
+      toast.error("Unable to sign out, please try again");
     }
   };
   return (

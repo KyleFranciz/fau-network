@@ -13,11 +13,21 @@ import {
 } from "@/services/eventMutations";
 import { queryClient } from "@/lib/queryClient";
 import { getAttendanceStatus } from "@/services/eventCheckers";
-import { getUserProfile } from "@/services/user";
 import ActionCalloutCard from "@/components/ActionCalloutCard";
 import ActionCalloutCardSkeleton from "@/components/ActionCalloutCardSkeleton";
 import { AlertCircle, MessageSquare } from "lucide-react";
 import { getUserProfile } from "@/services/user";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
+import {
+  DialogHeader,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 // import { toast } from "sonner";
 
 // Page for the event details
@@ -47,7 +57,7 @@ export default function EventDetailPage() {
   });
   const isAdmin = userProfile?.admin ?? false;
 
-  // function get data for this event details page
+  // function get data for the event for this event details page
   const {
     data: event,
     isLoading,
@@ -61,6 +71,7 @@ export default function EventDetailPage() {
   // TODO: make a funtion to get the host information for the this page
 
   const shouldCheckRegistration = Boolean(userId && eventId);
+  const eventName = event?.title ? event.title : "Name not available";
 
   // function to get the the user's profile information to pass into register and unregister function
   // TODO: Account for the error state
@@ -94,6 +105,7 @@ export default function EventDetailPage() {
     mutationFn: () =>
       registerForEvent(
         eventId,
+        eventName,
         user?.id,
         profileData?.name, // users username to be sent to the backend
         profileData?.email, // users email is sent to the backend
