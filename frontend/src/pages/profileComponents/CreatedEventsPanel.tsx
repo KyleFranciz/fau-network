@@ -10,11 +10,12 @@ type CreatedEventsPanelProps = {
   readonly events: readonly CreatedEventStat[];
 };
 
-const statusCopy: Record<CreatedEventStat["status"], { label: string; variant: "default" | "outline" | "secondary" | "success" }> = {
+const statusCopy: Record<CreatedEventStat["status"], { label: string; variant: "default" | "outline" | "secondary" | "success" | "destructive" }> = {
   live: { label: "Live now", variant: "success" },
   published: { label: "Published", variant: "default" },
   draft: { label: "Draft", variant: "outline" },
   completed: { label: "Completed", variant: "secondary" },
+  removed: { label: "Removed", variant: "destructive" },
 };
 
 const CreatedEventsPanel = (props: CreatedEventsPanelProps): ReactElement => {
@@ -83,6 +84,11 @@ const CreatedEventsPanel = (props: CreatedEventsPanelProps): ReactElement => {
                       {eventItem.attendeesCount} attending
                     </span>
                   </div>
+                  {eventItem.status === "removed" && eventItem.removalReason && (
+                    <p className="mt-2 text-sm font-medium text-destructive">
+                      Removal Reason: {eventItem.removalReason}
+                    </p>
+                  )}
                 </div>
                 <Button
                   variant="ghost"

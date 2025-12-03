@@ -7,4 +7,5 @@ export interface UserProfileDisplay {
   website: string;
   bio: string;
   attended: number;
+  admin?: boolean;
 }

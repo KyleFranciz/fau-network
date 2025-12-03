@@ -12,8 +12,9 @@ export type CreatedEventStat = {
   readonly name: string;
   readonly date: string;
   readonly location: string;
-  readonly status: "draft" | "published" | "live" | "completed";
+  readonly status: "draft" | "published" | "live" | "completed" | "removed";
   readonly description: string;
   readonly attendeesCount: number;
+  readonly removalReason?: string | null;
 };
 
