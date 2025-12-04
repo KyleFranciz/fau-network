@@ -301,12 +301,12 @@ export default function EventChatPage() {
             return;
           }
 
-          // invalidate and refetch the data from the backend
-          queryClient.invalidateQueries({
-            queryKey: ["event_messages", eventId],
-          });
-        },
-      )
+      // invalidate and refetch the data from the backend
+      queryClient.invalidateQueries({
+        queryKey: ["event-messages", eventId],
+      });
+    },
+  )
       .subscribe();
 
     // clean up after update (remove the channel after)
