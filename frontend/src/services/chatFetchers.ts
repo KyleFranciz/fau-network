@@ -5,12 +5,7 @@ import type { EventMessagesWithUserInfo } from "@/schemas/chats.interface";
 import axios from "axios";
 
 export const API_BASE_URL =
-  // NOTE: This checks to make sure that the url does not equal to undefined and that it is the .env
-  typeof import.meta !== "undefined" && "http://localhost:8000"
-    ? // if it does then make the value the api
-      "http://localhost:8000"
-    : // if not set the value to the default
-      "http://localhost:8000";
+  import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 // function to fetch the chat using the eventId
 export const getChatMessages = async (

@@ -3,14 +3,7 @@ import axios from "axios";
 import type { EventI, EventRegisterI } from "@/schemas/Events.interface";
 import { toast } from "sonner"; // used to add popups to notify the progress of event registration
 
-// import the .env variable
-const API_BASE_URL =
-  // NOTE: This checks to make sure that the url does not equal to undefined and that it is the .env
-  typeof import.meta !== "undefined" && "http://localhost:8000"
-    ? // if it does then make the value the api
-      "http://localhost:8000"
-    : // if not set the value to the default
-      "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 // NOTE: function to register for an event used in the useMutation hook calls
 // NOTE: Add in the username in to be passed in to be sent to the backend
