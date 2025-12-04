@@ -23,6 +23,7 @@ dotenv.config();
 
 // change the .env variable into a number
 const PORT = Number(process.env.PORT) || 8000;
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "http://localhost:5173";
 
 // initialize the server, and assign it to a variable (everything inbetween runs )
 const app = express();
@@ -33,7 +34,7 @@ app.use(express.json()); // middleware that makes sure the request that are json
 // cors
 app.use(
   cors({
-    origin: "http://localhost:5173", // the frontend port
+    origin: CORS_ORIGIN, // the frontend port
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
