@@ -1,8 +1,7 @@
 //NOTE: this file will have the fetching functions that interact with the backend api, these functions will be used in useQueries to handle fetching data for different events for the components that need them
 import axios from "axios";
+import { API_BASE_URL } from "@/services/apiClient";
 import type { EventI } from "@/schemas/Events.interface";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 // function to get the featured events from the data base
 export const getFeaturedEvents = async (): Promise<EventI[]> => {

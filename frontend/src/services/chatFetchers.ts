@@ -1,11 +1,10 @@
 // file to get the fetch the chat data that may be needed
 
-//imports
-import type { EventMessagesWithUserInfo } from "@/schemas/chats.interface";
 import axios from "axios";
+import { API_BASE_URL } from "@/services/apiClient";
+import type { EventMessagesWithUserInfo } from "@/schemas/chats.interface";
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+export { API_BASE_URL };
 
 // function to fetch the chat using the eventId
 export const getChatMessages = async (

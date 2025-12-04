@@ -1,9 +1,8 @@
 // mutation helpers for chat-related API calls
 
-import type { SendEventMessageI } from "@/schemas/chats.interface";
 import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+import { API_BASE_URL } from "@/services/apiClient";
+import type { SendEventMessageI } from "@/schemas/chats.interface";
 
 // send a chat message to the backend route and return the server response
 export const sendChatMessage = async (

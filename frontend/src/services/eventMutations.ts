@@ -1,9 +1,8 @@
 //NOTE: this file will have the mutation functions that interact with the backend api, these functions will be used in useMutations to handle mutating data for different events for the components that need them
 import axios from "axios";
+import { API_BASE_URL } from "@/services/apiClient";
 import type { EventI, EventRegisterI } from "@/schemas/Events.interface";
 import { toast } from "sonner"; // used to add popups to notify the progress of event registration
-
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 // NOTE: function to register for an event used in the useMutation hook calls
 // NOTE: Add in the username in to be passed in to be sent to the backend
