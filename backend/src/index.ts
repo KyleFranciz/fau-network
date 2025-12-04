@@ -1,29 +1,26 @@
-//imports
-import { app } from "./app";
-import dotenv from "dotenv";
-import { supabase } from "./supabaseClient";
 import cors from "cors";
-// import { request } from "http";
+import dotenv from "dotenv";
+import express, { Request, Response } from "express";
+import {
+  appendAttendeeToEventTab,
+  generateRegistrationId,
+  removeAttendeeFromEventTab,
+} from "./googleSheets";
+import { supabase } from "./supabaseClient";
 import { CategoryParams } from "./schema/category.schema";
 import { EventParams, EventRegisterParams } from "./schema/events.schema";
 import {
   EventMessageBody,
   EventMessageWithUser,
 } from "./schema/messages.schema";
-import {
-  appendAttendeeToEventTab,
-  generateRegistrationId,
-  removeAttendeeFromEventTab,
-} from "./googleSheets";
 
 // set up the dotenv
 dotenv.config();
 
-// change the .env variable into a number
 const PORT = Number(process.env.PORT) || 8000;
+const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:5173";
 
-// initialize the server, and assign it to a variable (everything inbetween runs )
-const app = express();
+export const app = express();
 
 // create the middleware to be able to parse the json
 app.use(express.json()); // middleware that makes sure the request that are json to be broken down
@@ -31,7 +28,7 @@ app.use(express.json()); // middleware that makes sure the request that are json
 // cors
 app.use(
   cors({
-    origin: "http://localhost:5173", // the frontend port
+    origin: corsOrigin,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -784,8 +781,12 @@ app.post(
 
 // TODO: make a route to get the profile data from supabase user table for profile pictures and user display names
 
-// start the actual server
-// listen - has the port run on 5000 and then the 0.0.0.0 listens to everything so that docker can connect and run
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("This server is running on the correct port rn:" + PORT);
-});
+export const startServer = (port = PORT) => {
+  return app.listen(port, "0.0.0.0", () => {
+    console.log("This server is running on the correct port rn:" + port);
+  });
+};
+
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}

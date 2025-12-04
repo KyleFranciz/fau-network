@@ -1,8 +1,11 @@
 // this file has the neccessary parts needed to use google sheets
 
+import dotenv from "dotenv";
 import { google } from "googleapis";
 import { createHash } from "crypto";
 import { AttendeeRow } from "./schema/googleSheets.schema";
+
+dotenv.config();
 
 // check for the neccessary variables to be imported
 if (

@@ -1,7 +1,44 @@
 // backend/tests/app.test.ts
 import request from "supertest";
-import { describe, it, expect } from "vitest";
-import { app } from "../src/app"; // path: backend/tests -> backend/src/app.ts
+import { describe, it, expect, vi } from "vitest";
+
+const buildMockQueryBuilder = () => {
+  const response = { data: [], error: null };
+  const builder: any = {
+    select: () => builder,
+    insert: () => builder,
+    update: () => builder,
+    delete: () => builder,
+    eq: () => builder,
+    gte: () => builder,
+    ilike: () => builder,
+    in: () => builder,
+    order: () => builder,
+    or: () => builder,
+    single: () => {
+      response.data = {};
+      return builder;
+    },
+    then: (onFulfilled: (value: typeof response) => void, onRejected?: (reason: unknown) => void) =>
+      Promise.resolve(response).then(onFulfilled, onRejected),
+    catch: (onRejected: (reason: unknown) => void) =>
+      Promise.resolve(response).catch(onRejected),
+    finally: (onFinally: () => void) =>
+      Promise.resolve(response).finally(onFinally),
+  };
+
+  return builder;
+};
+
+vi.mock("../src/supabaseClient", () => {
+  return {
+    supabase: {
+      from: vi.fn(() => buildMockQueryBuilder()),
+    },
+  };
+});
+
+import { app } from "../src/index";
 
 // These are simple integration tests for your Express routes.
 describe("Backend routes", () => {

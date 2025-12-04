@@ -1,47 +1,30 @@
 version: "3.9"
 
-# the type of set up we're running
 services:
-  # backend set up for the containers
   backend:
-    build: ./backend # Path to backend Dockerfile
+    build:
+      context: ./backend
     container_name: backend_container
     ports:
-      - "8000:8000" # host:container
-    volumes:
-      - ./backend:/app # Sync code for live reload
-      - /app/node_modules # Don't overwrite node_modules
+      - "8000:8000"
     env_file:
-      - ./backend/.env # Load environment variables
+      - ./backend/.env
     environment:
-      - CHOKIDAR_USEPOLLING=true # Enable file polling for nodemon
-      - WATCHPACK_POLLING=true # Helps if using webpack/vite later
-      - CHOKIDAR_INTERVAL=200
-    command: npm run dev # Run nodemon for live reload
-    networks:
-      - app_network # Shared network between frontend/backend
-
-  # frontend set up for the containers
-  frontend:
-    build: ./frontend # Path to frontend Dockerfile
-    container_name: frontend_container
-    ports:
-      - "5173:5173" # host:container
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    env_file:
-      - ./frontend/.env
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-    command: npm run dev # Runs Vite dev server
-    depends_on:
-      - backend # Wait until backend starts
+      NODE_ENV: production
     networks:
       - app_network
 
-# connect the frontend and the backend
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend_container
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
 networks:
   app_network:
     driver: bridge
