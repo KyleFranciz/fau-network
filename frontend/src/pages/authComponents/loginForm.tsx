@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn, signUp } from "@/lib/auth";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 interface LoginFormProps {
   initialMode?: "login" | "signup";
@@ -25,26 +26,31 @@ export default function LoginForm({ initialMode = "login" }: LoginFormProps) {
     e.preventDefault();
     setLoading(true);
     try {
-      if (isLogin) await signIn(formData.email, formData.password);
-      else
+      if (isLogin) {
+        await signIn(formData.email, formData.password);
+        toast.success("Signed in successfully!");
+      } else {
         await signUp(
           formData.email,
           formData.password,
           formData.first_name,
           formData.last_name,
         );
+        toast.success("Account created! Please check your email to confirm.");
+      }
 
-      alert("Logged in successfully!"); // TODO: might make into a modal to let the user know (gonna work on in final stretch)
       navigate("/"); // made the change to route the user to the homepage after sign in
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong, try again.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center">
       <form
         onSubmit={handleSubmit}
         className="max-w-md mx-auto p-6 border rounded-sm space-y-4 bg-white/70"

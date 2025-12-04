@@ -4,6 +4,8 @@ import { homePagePrefetcher } from "@/prefetchers/homePagePrefetcher";
 import { Link } from "react-router";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "@/lib/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { toast } from "sonner";
 
 export default function Navbar() {
   // check the auth state
@@ -11,13 +13,16 @@ export default function Navbar() {
   const handleSignOut = async (): Promise<void> => {
     try {
       await signOut();
+      toast.success("Signed out successfully");
     } catch (error) {
       console.error("Failed to sign out", error);
+      toast.error("Unable to sign out, please try again");
     }
   };
   return (
     <nav className="border-b max-w-7xl w-full mx-auto px-6 mt-4 sticky top-4  py-4 z-100 rounded-4xl bg-white/25 backdrop-blur-sm border-white/20 shadow-sm">
       <div className="mx-auto">
+        {/* TODO: add in an avatar component to hold house the avatar image of the user */}
         {/* TODO: MAKE SURE THAT WHEN THE PAGE IS NAVIGATED TO THE PAGE STARTS AT THE TOP */}
         {/* WARNING: EVERY THING BELLOW SHOULD BE EDITED IF WORKING ON THE NAVBAR COMPONENT */}
         {/* NOTE: The link components will be used to route to other pages in the app, best to use in the navbar */}
@@ -44,6 +49,7 @@ export default function Navbar() {
             <Link
               to="/profile"
               className="text-lg font-semibold text-gray-800 transition-colors hover:text-gray-900"
+              // NOTE: Might add in a prefetcher for the profile page so that the users initial data is fetched when navigated to
             >
               Profile
             </Link>
@@ -55,13 +61,20 @@ export default function Navbar() {
                 aria-hidden="true"
               />
             ) : user ? (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="px-5 py-1 bg-black text-white rounded-3xl font-semibold text-lg transition-colors hover:bg-gray-800"
-              >
-                Sign Out
-              </button>
+              <div className="flex items-center ">
+                {/* NOTE: User avatar and signout appear if the user is signed in  */}
+                <Avatar className="mr-3">
+                  <AvatarImage />
+                  <AvatarFallback>Logo</AvatarFallback>
+                </Avatar>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="px-5 py-1 bg-black text-white rounded-3xl font-semibold text-lg transition-colors hover:bg-gray-800"
+                >
+                  Sign out
+                </button>
+              </div>
             ) : (
               <>
                 <Link

@@ -1,7 +1,12 @@
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import Navbar from "../components/Navbar";
+import Footer from "@/pages/homeComponents/Footer";
 
 export default function RootLayout() {
+  // NOTE: To help with rendering certain components on certain pages
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -14,17 +19,8 @@ export default function RootLayout() {
         </div>
       </main>
 
-      {/* Footer */}
-      {/* WARNING: THIS PART IS TO EDIT FOR THE FOOTER COMPONENT */}
-      {/* TODO: UPDATE THE FOOTER TO HAVE THE FOOTER COMPONENT ACROSS THE WHOLE APP LAYOUT  */}
-      <footer className="border-t bg-gray-50">
-        <div className="mx-auto py-6">
-          <p className="text-center text-sm text-gray-600">
-            &copy; 2025 Campus Event Planner
-          </p>
-        </div>
-      </footer>
-      {/* WARNING: EDIT IN BETWEEN FOR THE FOOTER */}
+      {/* Use the full footer on every page except the home page, which provides its own */}
+      {!isHomePage && <Footer />}
     </div>
   );
 }

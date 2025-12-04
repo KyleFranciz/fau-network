@@ -1,16 +1,26 @@
-#use the most up to date node version
-FROM node:22
-# set the working dir for the container
+# Stage 1 - install dependencies & build TypeScript
+FROM node:22-alpine AS builder
+
 WORKDIR /app
-# copy the package.json and the lock file (copy's all the package files) 
-COPY package*.json ./ 
-# install all the dependencies (the packages)
-RUN npm install 
-# copy the rest of the code into the container
+
+COPY package*.json ./
+RUN npm ci
+
 COPY . .
-# Build TS to JS
 RUN npm run build
-# expose the port
+
+# Stage 2 - production image with compiled output only
+FROM node:22-alpine AS runner
+
+ENV NODE_ENV=production
+WORKDIR /app
+
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+RUN npm prune --omit=dev
+
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 8000
-# start the server (change to "start" in prod)
-CMD [ "npm", "run", "dev" ]
+
+CMD ["node", "dist/index.js"]

@@ -14,6 +14,8 @@ interface EventSectionProps {
   queryFn?: () => Promise<EventI[]>;
 }
 
+// TODO: handle the if the searchTerm is used in this component, render the search term results
+
 // NOTE: Reusable event showcase that can load any event grouping via React Query.
 export default function EventSection({
   title,
@@ -32,7 +34,7 @@ export default function EventSection({
   });
 
   // function to handle when the event is clicked
-  // TODO: set up the functionality later on
+  // TODO: add in the event registration functionality that ryan made
   const handleJoinClick = (): void => {
     console.log("Join event clicked");
   };
@@ -72,6 +74,7 @@ export default function EventSection({
           </div>
         )}
 
+        {/* TODO: add in a function at the top that gets the first three users avatar images from the backend and display them as the avatar icons for the event's */}
         {!isLoading && !isError && events.length > 0 && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (

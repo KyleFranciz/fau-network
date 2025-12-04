@@ -1,11 +1,788 @@
 //imports
 import { app } from "./app";
 import dotenv from "dotenv";
+import { supabase } from "./supabaseClient";
+import cors from "cors";
+// import { request } from "http";
+import { CategoryParams } from "./schema/category.schema";
+import { EventParams, EventRegisterParams } from "./schema/events.schema";
+import {
+  EventMessageBody,
+  EventMessageWithUser,
+} from "./schema/messages.schema";
+import {
+  appendAttendeeToEventTab,
+  generateRegistrationId,
+  removeAttendeeFromEventTab,
+} from "./googleSheets";
 
-// help bring in env variables
+// set up the dotenv
 dotenv.config();
 
-const PORT = Number(process.env.PORT || 8000);
+// change the .env variable into a number
+const PORT = Number(process.env.PORT) || 8000;
+
+// initialize the server, and assign it to a variable (everything inbetween runs )
+const app = express();
+
+// create the middleware to be able to parse the json
+app.use(express.json()); // middleware that makes sure the request that are json to be broken down
+
+// cors
+app.use(
+  cors({
+    origin: "http://localhost:5173", // the frontend port
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+// routes
+
+// testing route
+app.get("/", (_request: Request, response: Response) => {
+  // send a test message
+  response.send("If your seeing this the backend request is working properly");
+});
+
+// route to create a new event
+app.post("/events", async (request: Request, response: Response) => {
+  try {
+    const {
+      title,
+      description,
+      category_id,
+      image_url,
+      date,
+      time,
+      location,
+      host_id,
+    } = request.body;
+
+    // Validate required fields
+    if (!title || !category_id || !date || !time || !location || !host_id) {
+      return response.status(400).json({
+        error:
+          "Missing required fields: title, category_id, date, time, location, host_id",
+      });
+    }
+
+    // Insert the new event into Supabase
+    const { data, error } = await supabase
+      .from("events")
+      .insert({
+        title,
+        description: description || null,
+        category_id,
+        image_url: image_url || null,
+        date,
+        time,
+        location,
+        host_id,
+        attendees_count: 0,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Supabase Error:", error.message);
+      return response.status(500).json({ error: error.message });
+    }
+
+    return response.status(201).json(data);
+  } catch (err) {
+    console.error("Server Error:", err);
+    return response.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// supabase route to fetch all events (featured events)
+app.get("/events", async (_request: Request, response: Response) => {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .or("status.neq.removed,status.is.null");
+  if (error) {
+    return response.status(500).json({ error: error.message });
+  }
+  response.json(data);
+});
+
+// supabase route to fetch an event by id
+
+// TODO: route to get all the popular events
+app.get("/events/popular", async (_request: Request, response: Response) => {
+  try {
+    // get the events with over 10 attendees (changing later possibly)
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .gte("attendees_count", "20") // NOTE: get value greater than or equal to...
+      .or("status.neq.removed,status.is.null");
+    //NOTE: changed value to string to cause supabase makes evals based of strings
+
+    // check if there is an error when getting the data from supabase
+    if (error) {
+      console.error("supabase error:", error.message);
+      response.status(500).json({ error: error.message });
+      // return stop the call
+      return;
+    }
+
+    // otherwise return the data
+    return response.json(data);
+  } catch (err) {
+    // if there is an error in the server
+    console.error("Server Error:", err);
+    response.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// route to fetch a specific event by id
+app.get(
+  "/event/:eventId",
+  async (request: Request<EventParams>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      const { data, error } = await supabase
+        .from("events")
+        .select(`*, categories(*)`)
+        .eq("id", eventId)
+        .single();
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      if (!data) {
+        return response.status(404).json({ error: "Event not found" });
+      }
+
+      return response.json(data);
+    } catch (err) {
+      console.error("Server Error:", err);
+      response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// NOTE: gets the category from the request param to search supabase table
+// TODO: add a search param to get get the users searchTerm to add into the api
+app.get(
+  "/events/category/:categoryId",
+  async (
+    // search optional query
+    _request: Request<CategoryParams, { search?: string }>,
+    response: Response,
+  ) => {
+    try {
+      // fetch events from the study category in display them on the frontend
+      // TODO: CHANGE THE VALUE TO THE REQUEST ROUTIING WHEN SELECTED
+
+      // save the categoryId from request
+      const { categoryId } = _request.params;
+
+      // get the search query from the request
+      const rawSearch = _request.query.search;
+
+      const search = typeof rawSearch === "string" ? rawSearch.trim() : ""; // save if search is a string if not then send and empty string
+
+      //NOTE: might do a check to see if the param is equal to all's id and look up all events and then return
+
+      console.log(categoryId);
+      console.log("search:", search);
+
+      // base query always pulls events + related categories
+      let query = supabase
+        .from("events")
+        .select(`*, categories(*)`) // NOTE: get all the elements for the events as well as the data from the category table
+        .or("status.neq.removed,status.is.null");
+
+      // only filter by category when a specific category (not "All") is selected
+      if (categoryId !== "0") {
+        query = query.eq("category_id", categoryId);
+      }
+
+      // handle case where there is a search param passed in
+      if (search) {
+        // search supabase for an event that matches the title
+        query = query.ilike("title", `%${search}%`); // modify the query to have the info of the events that match
+      }
+
+      // finalize the query that will be sent and structure it to send as data and catch the errors
+      const { data, error } = await query;
+
+      // check if there was an error
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        response.status(500).json({ error: error.message });
+        // exit the function
+        return;
+      }
+
+      // return the data of the query that is found
+      return response.json(data);
+    } catch (err) {
+      console.error("Server Error", err);
+      response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to fetch events created by a specific user (host)
+// NOTE: Might use for the event chat to be able to identify the host of the event
+app.get(
+  "/events/host/:hostId",
+  async (request: Request<{ hostId: string }>, response: Response) => {
+    try {
+      const { hostId } = request.params;
+
+      const { data, error } = await supabase
+        .from("events")
+        .select(`*, categories(*)`)
+        .eq("host_id", hostId)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      return response.json(data ?? []);
+    } catch (err) {
+      console.error("Server Error", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to fetch events that a user has attended/registered for
+app.get(
+  "/events/attendee/:userId",
+  async (request: Request<{ userId: string }>, response: Response) => {
+    try {
+      const { userId } = request.params;
+
+      // First, get all event_attendees records for this user
+      const { data: attendeesData, error: attendeesError } = await supabase
+        .from("event_attendees")
+        .select("id, event_id, user_id, status, joined_at")
+        .eq("user_id", userId)
+        .order("joined_at", { ascending: false });
+
+      if (attendeesError) {
+        console.error("Supabase Error:", attendeesError.message);
+        return response.status(500).json({ error: attendeesError.message });
+      }
+
+      if (!attendeesData || attendeesData.length === 0) {
+        return response.json([]);
+      }
+
+      // Get all event IDs
+      const eventIds = attendeesData.map(
+        (attendee: { event_id: string }) => attendee.event_id,
+      );
+
+      // Fetch the events with their categories
+      const { data: eventsData, error: eventsError } = await supabase
+        .from("events")
+        .select(
+          `id, title, description, date, time, location, image_url, categories(*)`,
+        )
+        .in("id", eventIds);
+
+      if (eventsError) {
+        console.error("Supabase Error:", eventsError.message);
+        return response.status(500).json({ error: eventsError.message });
+      }
+
+      // Combine the data: map attendees with their corresponding events
+      const combinedData = attendeesData.map(
+        (attendee: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          status: string;
+          joined_at: string;
+        }) => {
+          const event = eventsData?.find(
+            (e: { id: string }) => e.id === attendee.event_id,
+          );
+          return {
+            id: attendee.id,
+            event_id: attendee.event_id,
+            user_id: attendee.user_id,
+            status: attendee.status,
+            joined_at: attendee.joined_at,
+            events: event || null,
+          };
+        },
+      );
+
+      return response.json(combinedData);
+    } catch (err) {
+      console.error("Server Error", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to update an event status (admin or host)
+app.patch(
+  "/events/:eventId/status",
+  async (request: Request<{ eventId: string }>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      const { status, removal_reason, userId } = request.body;
+
+      if (!userId || !status) {
+        return response.status(400).json({ error: "Missing userId or status" });
+      }
+
+      // Fetch the user to check for admin privileges
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("admin")
+        .eq("id", userId)
+        .single();
+
+      if (userError || !user) {
+        return response.status(404).json({ error: "User not found" });
+      }
+
+      const isAdmin = user.admin;
+
+      // Verify the event exists
+      const { data: existingEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("host_id")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError || !existingEvent) {
+        return response.status(404).json({ error: "Event not found" });
+      }
+
+      // Allow if admin or host
+      if (existingEvent.host_id !== userId && !isAdmin) {
+        return response.status(403).json({
+          error: "You are not authorized to update this event status",
+        });
+      }
+
+      // Update the event status
+      const { data, error } = await supabase
+        .from("events")
+        .update({
+          status,
+          removal_reason: removal_reason || null,
+        })
+        .eq("id", eventId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      return response.json(data);
+    } catch (err) {
+      console.error("Server Error:", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to update an event (only by host)
+app.put(
+  "/events/:eventId",
+  async (request: Request<{ eventId: string }>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      const {
+        title,
+        description,
+        category_id,
+        image_url,
+        date,
+        time,
+        location,
+        host_id,
+      } = request.body;
+
+      // Validate required fields
+      if (!title || !category_id || !date || !time || !location || !host_id) {
+        return response.status(400).json({
+          error:
+            "Missing required fields: title, category_id, date, time, location, host_id",
+        });
+      }
+
+      // First, verify the event exists and the user is the host
+      const { data: existingEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("host_id")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError || !existingEvent) {
+        return response.status(404).json({ error: "Event not found" });
+      }
+
+      if (existingEvent.host_id !== host_id) {
+        return response.status(403).json({
+          error: "You are not authorized to update this event",
+        });
+      }
+
+      // Update the event
+      const { data, error } = await supabase
+        .from("events")
+        .update({
+          title,
+          description: description || null,
+          category_id,
+          image_url: image_url || null,
+          date,
+          time,
+          location,
+        })
+        .eq("id", eventId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      return response.json(data);
+    } catch (err) {
+      console.error("Server Error:", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to delete an event (only by host)
+app.delete(
+  "/events/:eventId",
+  async (request: Request<{ eventId: string }>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      const { host_id } = request.body;
+
+      if (!host_id) {
+        return response.status(400).json({ error: "host_id is required" });
+      }
+
+      // First, verify the event exists and the user is the host
+      const { data: existingEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("host_id")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError || !existingEvent) {
+        return response.status(404).json({ error: "Event not found" });
+      }
+
+      if (existingEvent.host_id !== host_id) {
+        return response.status(403).json({
+          error: "You are not authorized to delete this event",
+        });
+      }
+
+      // Delete related records first (event_attendees, event_messages)
+      await supabase.from("event_attendees").delete().eq("event_id", eventId);
+      await supabase.from("event_messages").delete().eq("event_id", eventId);
+
+      // Delete the event
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId);
+
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        return response.status(500).json({ error: error.message });
+      }
+
+      return response.json({ message: "Event deleted successfully" });
+    } catch (err) {
+      console.error("Server Error:", err);
+      return response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to register an attendee for an event
+// NOTE: link google sheets function in order to save the necessary data into the list
+app.post(
+  "/events/register/:eventId",
+  async (request: Request<EventRegisterParams>, response: Response) => {
+    try {
+      const { eventId } = request.params;
+      // NOTE: name and email is for adding to the google sheet
+      const { eventName, userId, registeredDate, userName, email } =
+        request.body;
+
+      // check if there is a userId and eventId
+      if (!eventId || !userId) {
+        return response.status(400).json({
+          error: "Missing userId or eventId, please provide them and try again",
+        });
+      }
+
+      const registrationId = generateRegistrationId(eventId, userId);
+
+      // NOTE: data isn't being returned (noting for lsp reasons, might just remove as a variable)
+      const { data, error } = await supabase.from("event_attendees").insert({
+        event_id: eventId,
+        user_id: userId,
+        // NOTE: might add the users full_name and email to the sheet
+        status: "registered",
+        joined_at: registeredDate,
+      });
+      if (error) {
+        console.error("Supabase Error:", error.message);
+        response.status(500).json({ error: error.message });
+        return;
+      }
+
+      // try catch to make sure catch google sheets errors
+      try {
+        // add the attendees info to the google sheet to be viewed
+        await appendAttendeeToEventTab({
+          registrationId,
+          eventId: eventId,
+          eventName: eventName, // got from the frontend
+          attendeeName: userName, // got from the frontend
+          attendeeEmail: email, // got from the frontend
+          timestamp: registeredDate,
+        });
+        // log if there is an error in adding to the google sheets
+        console.log(`row has been added to google sheets`);
+      } catch (sheetsError) {
+        console.error({
+          error: `Data failed to add to google sheets: ${sheetsError}`,
+        });
+      }
+
+      // After the user is registered, update the event attendees count
+      // Fetch the current attendees_count
+      const { data: currentEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("attendees_count")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError) {
+        console.error("Supabase Fetch Error:", fetchError.message);
+        response.status(500).json({ error: fetchError.message });
+        return;
+      }
+
+      // Update the attendees_count
+      const { data: updatedEvent, error: updateError } = await supabase
+        .from("events")
+        .update({ attendees_count: (currentEvent?.attendees_count || 0) + 1 }) // sets to zero if no attendees_count and add 1
+        .eq("id", eventId);
+
+      if (updateError) {
+        console.error("Supabase Update Error:", updateError.message);
+        response.status(500).json({ error: updateError.message });
+        return;
+      }
+
+      // NOTE: Returns the updated events data to the frontend
+      response.json(updatedEvent);
+    } catch (err) {
+      console.error("Server Error", err);
+      response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to unregister from an event
+app.delete(
+  "/event/register/:eventId",
+  async (request: Request<EventRegisterParams>, response: Response) => {
+    try {
+      // get the params from the request
+      const { eventId } = request.params;
+      const { userId } = request.body; // might not need to use the registeredDate to remove the user
+
+      if (!userId) {
+        return response.status(400).json({
+          error: "Missing userId, please provide it and try again",
+        });
+      }
+
+      const registrationId = generateRegistrationId(eventId, userId);
+
+      // remove the user from the attendees table for the event (might not need to return the data)
+      const { error } = await supabase
+        .from("event_attendees")
+        .delete()
+        .eq("event_id", eventId)
+        .eq("user_id", userId);
+
+      // check if there was an error removing the user from the table
+      if (error) {
+        return response.json({
+          error: `There was an error deleting the user: ${error}`,
+        });
+      }
+
+      const { data: currentEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("attendees_count,title")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError) {
+        console.error("Supabase Fetch Error:", fetchError.message);
+        return response.status(500).json({ error: fetchError.message });
+      }
+
+      const currentCount = currentEvent?.attendees_count || 0;
+      const nextCount = currentCount > 0 ? currentCount - 1 : 0;
+      const { error: updateError } = await supabase
+        .from("events")
+        .update({ attendees_count: nextCount })
+        .eq("id", eventId);
+
+      if (updateError) {
+        console.error("Supabase Update Error:", updateError.message);
+        return response.status(500).json({ error: updateError.message });
+      }
+
+      const eventTitle = currentEvent?.title;
+      if (eventTitle) {
+        try {
+          await removeAttendeeFromEventTab(eventId, eventTitle, registrationId);
+        } catch (sheetsError) {
+          console.error(
+            `Failed to remove attendee ${registrationId} from Google Sheets`,
+            sheetsError,
+          );
+        }
+      } else {
+        console.warn(
+          `Event ${eventId} missing title; skipping Google Sheets removal`,
+        );
+      }
+
+      return response.json({
+        message: "This user got deleted from the database",
+        attendees_count: nextCount,
+      });
+    } catch (error) {
+      // catch if there is an error with deleting the user from the database
+      response.json({
+        error: `There was an error deleting the user: ${error}`,
+      });
+    }
+  },
+);
+
+// function to get the chat messages from the backend
+app.get(
+  "/event/:eventId/chat",
+  async (request: Request<{ eventId: string }>, response: Response) => {
+    try {
+      // use the event id from the param
+      const { eventId } = request.params;
+
+      // get the event message from supabase to package later in this function
+      const { data: messageData, error: messageError } = await supabase
+        .from("event_messages")
+        .select(
+          `id, event_id, user_id, message, created_at, users:user_id( full_name, profile_image)`,
+        )
+        .eq("event_id", eventId)
+        .order("created_at", { ascending: true });
+
+      // if there is are no messages in the chat
+      // if (messageData?.length === 0) {
+      //   return response
+      //     .status(404)
+      //     .json({ error: "There is are no messages in this event" });
+      // }
+
+      if (messageError) {
+        console.error("Supabase Error:", messageError.message);
+        return response.status(500).json({ error: messageError.message });
+      }
+
+      // handle if the message data is available or not
+      response
+        .status(200)
+        .json({ messages: (messageData ?? []) as EventMessageWithUser[] });
+    } catch (err) {
+      console.error("Server Error", err);
+      response.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+);
+
+// route to send messages to the database
+app.post(
+  "/event/:eventId/chat",
+  async (
+    request: Request<{ eventId: string }, EventMessageBody>,
+    response: Response,
+  ) => {
+    try {
+      // assign the variables and do all the checking
+
+      // get the event id from the request param (might have to tweak later)
+      const { eventId } = request.params;
+
+      // get the message and the user_id from the request body
+      const { message, user_id } = request.body;
+
+      // check if there is a message or user_id
+      if (!message || !user_id) {
+        response.status(400).json({ error: "Message or user_id is missing" });
+        return;
+      }
+
+      //add the message to the event messages
+      const { data, error } = await supabase
+        .from("event_messages")
+        .insert([
+          {
+            event_id: eventId,
+            user_id: user_id,
+            message: message, // messages sent to the backend
+          },
+        ])
+        .select(
+          `id, event_id, user_id, message, created_at, users:user_id ( full_name, profile_image)`,
+        )
+        .single();
+
+      // check for an error
+      if (error) {
+        throw error;
+      }
+      // return the one message that the user just sent
+      response.status(200).json({ message: data as EventMessageWithUser }); // returns the single message with all the info about the user that just sent the message
+    } catch (err) {
+      console.error("Server Error", err);
+      response.status(500).json({ error: "Internal Server Error" });
+      return;
+    }
+  },
+);
+
+// TODO: make a route to get the profile data from supabase user table for profile pictures and user display names
 
 // start the actual server
 // listen - has the port run on 5000 and then the 0.0.0.0 listens to everything so that docker can connect and run

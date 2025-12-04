@@ -12,9 +12,13 @@ import SignUpPage from "./pages/SignUp";
 import ProfilePage from "./pages/Profile";
 import NotFoundPage from "./pages/NotFound";
 import AuthCallbackPage from "./pages/AuthCallback";
+import CreateEventPage from "./pages/CreateEvent";
+import EditEventPage from "./pages/EditEvent";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
+import EventChatPage from "./pages/EventChat";
+import { Toaster } from "sonner";
 // TODO: use the useParam function to help with the routing to the eventId page to when elements are clicked on the route to different pages
 
 //NOTE: set up for the queryClient so that we can use useQuery to get data across the application
@@ -36,9 +40,10 @@ const router = createBrowserRouter([
         element: <EventsPage />,
       },
       {
-        path: "events/:eventId", // this is for the individual event page
+        path: "event/:eventId", // this is for the individual event page
         element: <EventDetailPage />,
       },
+      { path: "event/:eventId/chat", element: <EventChatPage /> },
       {
         path: "login", // this is for the auth page (might combine the login and the signup page)
         element: <LoginPage />,
@@ -53,7 +58,16 @@ const router = createBrowserRouter([
       },
       {
         path: "profile", // this is for the profile page to edit the account information
+        // TODO: take the user to login page if not signed in already
         element: <ProfilePage />,
+      },
+      {
+        path: "events/create", // this is for creating a new event
+        element: <CreateEventPage />,
+      },
+      {
+        path: "events/:eventId/edit", // this is for editing an event
+        element: <EditEventPage />,
       },
       {
         path: "*", // catch-all route for 404 pages
@@ -68,6 +82,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RouterProvider router={router} />
+        {/* NOTE: Might change the position of the toaster that pops up */}
+        <Toaster position="top-center" />
       </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>,

@@ -36,4 +36,21 @@ export interface EventI {
   location: string | null;
   host_id: string | null;
   attendees_count: number | null; // note: backend typo preserved
+  status?: string;
+  removal_reason?: string | null;
+}
+
+// Event interface for registering for an event
+export interface EventRegisterI {
+  eventId: string;
+  userId: string;
+  registeredDate?: string;
+}
+
+export interface EventAttendeeStatusI {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: string;
+  joined_at: Date;
 }
